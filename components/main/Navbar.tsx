@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { X, Menu } from "lucide-react";
 
 const navLinks = [
@@ -12,21 +13,41 @@ const navLinks = [
   { label: "BOOK US", href: "/contact" },
 ];
 
+function ActiveLink({
+  href,
+  label,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  onClick?: () => void;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`relative transition duration-300 hover:text-white
+        after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-red-600
+        after:transition-all after:duration-300 hover:after:w-full
+        ${isActive ? "text-white after:w-full" : "after:w-0"}`}
+    >
+      {label}
+    </Link>
+  );
+}
+
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-
   const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full bg-black/40 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4 md:px-12">
         {/* Logo / Brand */}
-        <Link
-          href="/"
-          className="flex items-center gap-3 group"
-          onClick={closeMenu}
-        >
-          {/* SVG initials logo – zero extra network request */}
+        <Link href="/" className="flex items-center gap-3 group" onClick={closeMenu}>
           <svg
             width="40"
             height="40"
@@ -56,13 +77,7 @@ const Navbar = () => {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8 text-xs font-sans font-light tracking-widest text-gray-300">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="hover:text-white transition duration-300 relative after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-red-600 after:transition-all after:duration-300 hover:after:w-full"
-            >
-              {link.label}
-            </Link>
+            <ActiveLink key={link.href} href={link.href} label={link.label} />
           ))}
         </nav>
 
@@ -81,14 +96,12 @@ const Navbar = () => {
         <div className="md:hidden bg-black/90 backdrop-blur-md border-t border-white/10">
           <nav className="flex flex-col px-6 py-6 gap-5 text-sm font-sans tracking-widest text-gray-300">
             {navLinks.map((link) => (
-              <Link
+              <ActiveLink
                 key={link.href}
                 href={link.href}
-                className="hover:text-white transition duration-300"
+                label={link.label}
                 onClick={closeMenu}
-              >
-                {link.label}
-              </Link>
+              />
             ))}
           </nav>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 const portfolioItems = [
@@ -10,7 +10,7 @@ const portfolioItems = [
     alt: 'Wedding couple in outdoor nature setting',
     category: 'Wedding',
     title: 'Fatema & Rakib',
-    span: 'row-span-2', // tall card
+    span: 'row-span-2',
   },
   {
     id: 2,
@@ -34,7 +34,7 @@ const portfolioItems = [
     alt: 'Couple reception photography',
     category: 'Reception',
     title: 'Sara & Hasan',
-    span: 'row-span-2', // tall card
+    span: 'row-span-2',
   },
   {
     id: 5,
@@ -58,11 +58,39 @@ const categories = ['All', 'Wedding', 'Holud', 'Nikah', 'Reception'];
 
 const Portfolio = () => {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const filtered =
     activeCategory === 'All'
       ? portfolioItems
       : portfolioItems.filter((item) => item.category === activeCategory);
+
+  const openLightbox = (index: number) => setLightboxIndex(index);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const showPrev = useCallback(() =>
+    setLightboxIndex((prev) => prev === null ? null : (prev - 1 + filtered.length) % filtered.length),
+    [filtered.length]
+  );
+  const showNext = useCallback(() =>
+    setLightboxIndex((prev) => prev === null ? null : (prev + 1) % filtered.length),
+    [filtered.length]
+  );
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'ArrowRight') showNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxIndex, closeLightbox, showPrev, showNext]);
+
+  useEffect(() => {
+    document.body.style.overflow = lightboxIndex !== null ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [lightboxIndex]);
 
   return (
     <section
@@ -79,7 +107,6 @@ const Portfolio = () => {
       />
 
       <div className="relative max-w-7xl mx-auto">
-
         {/* Section header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-14 gap-6">
           <div className="space-y-3">
@@ -111,10 +138,11 @@ const Portfolio = () => {
 
         {/* Masonry-style grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-[220px]">
-          {filtered.map(({ id, src, alt, category, title, span }) => (
+          {filtered.map(({ id, src, alt, category, title, span }, index) => (
             <div
               key={id}
-              className={`relative overflow-hidden group rounded-sm ${span}`}
+              onClick={() => openLightbox(index)}
+              className={`relative overflow-hidden group rounded-sm cursor-zoom-in ${span}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -152,6 +180,68 @@ const Portfolio = () => {
           </Link>
         </div>
       </div>
+
+      {/* ── Lightbox Modal ── */}
+      {lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center"
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Close */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-5 right-6 text-white/60 hover:text-white transition-colors z-10 w-10 h-10 flex items-center justify-center text-2xl font-thin"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
+          {/* Counter */}
+          <span className="absolute top-6 left-6 text-white/40 text-xs tracking-widest font-sans select-none">
+            {lightboxIndex + 1} / {filtered.length}
+          </span>
+
+          {/* Prev */}
+          <button
+            onClick={(e) => { e.stopPropagation(); showPrev(); }}
+            className="absolute left-3 md:left-6 text-white/50 hover:text-white transition-colors z-10 p-3 rounded-full hover:bg-white/10"
+            aria-label="Previous image"
+          >
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Image container */}
+          <div
+            className="relative max-w-5xl max-h-[88vh] w-full mx-20 flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={filtered[lightboxIndex].src}
+              alt={filtered[lightboxIndex].alt}
+              className="max-w-full max-h-[82vh] object-contain rounded-sm shadow-2xl"
+            />
+            {/* Caption */}
+            <p className="mt-4 text-white/40 text-xs tracking-[0.25em] uppercase font-sans text-center select-none">
+              {filtered[lightboxIndex].category} &mdash; {filtered[lightboxIndex].title}
+            </p>
+          </div>
+
+          {/* Next */}
+          <button
+            onClick={(e) => { e.stopPropagation(); showNext(); }}
+            className="absolute right-3 md:right-6 text-white/50 hover:text-white transition-colors z-10 p-3 rounded-full hover:bg-white/10"
+            aria-label="Next image"
+          >
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
     </section>
   );
 };
