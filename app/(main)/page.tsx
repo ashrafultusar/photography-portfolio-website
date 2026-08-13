@@ -2,8 +2,8 @@ import React from 'react';
 import Hero from '@/components/main/home/Hero';
 import About from '@/components/main/home/About';
 import Portfolio from '@/components/main/home/Portfolio';
-import Packages from '@/components/main/home/Packages';
-import BookUs from '@/components/main/home/BookUs';
+import PackageCards from '@/components/main/package/PackageCards';
+import QuoteCTA from '@/components/main/home/QuoteCTA';
 
 export default function HomePage() {
     return (
@@ -13,8 +13,8 @@ export default function HomePage() {
             </section>
             <About />
             <Portfolio />
-            <Packages />
-            <BookUs />
+            <QuoteCTA />
+            <PackageCards />
         </>
     );
 }
