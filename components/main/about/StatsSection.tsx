@@ -1,13 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { StatsSectionData } from '@/lib/types/about';
 
-const stats = [
-    { value: 8, suffix: '+', label: 'Years of Experience' },
-    { value: 500, suffix: '+', label: 'Weddings Covered' },
-    { value: 20, suffix: '+', label: 'Cities Across BD' },
-    { value: 98, suffix: '%', label: 'Happy Clients' },
-];
+interface StatsSectionProps {
+    data: StatsSectionData;
+}
 
 function useCountUp(target: number, duration = 1800, start = false) {
     const ref = useRef<HTMLSpanElement>(null);
@@ -30,7 +28,7 @@ function useCountUp(target: number, duration = 1800, start = false) {
     return ref;
 }
 
-function StatCard({ value, suffix, label }: (typeof stats)[0]) {
+function StatCard({ value, suffix, label }: { value: number; suffix: string; label: string }) {
     const ref = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = React.useState(false);
     const numRef = useCountUp(value, 1800, visible);
@@ -47,30 +45,30 @@ function StatCard({ value, suffix, label }: (typeof stats)[0]) {
     }, []);
 
     return (
-        <div ref={ref} className="text-center space-y-2 p-8 border border-white/10 bg-white/5 rounded-sm">
-            <p className="text-5xl font-serif font-light text-white">
+        <div ref={ref} className="text-center space-y-2 p-8 border border-slate-300 bg-white rounded-xl shadow-md">
+            <p className="text-5xl font-serif font-bold text-slate-900">
                 <span ref={numRef}>0</span>
-                <span className="text-red-500">{suffix}</span>
+                <span className="text-amber-600 font-bold">{suffix}</span>
             </p>
-            <p className="text-xs tracking-widest uppercase text-gray-400 font-sans">{label}</p>
+            <p className="text-xs tracking-widest uppercase text-slate-600 font-sans font-bold">{label}</p>
         </div>
     );
 }
 
-const StatsSection = () => {
+const StatsSection = ({ data }: StatsSectionProps) => {
     return (
-        <section className="w-full bg-neutral-900 py-24 px-6 md:px-12">
+        <section className="w-full bg-[#e2e8f0] py-24 px-6 md:px-12 border-t border-b border-slate-300">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-14 space-y-3">
-                    <p className="text-xs tracking-[0.3em] uppercase text-red-600 font-sans">
-                        By The Numbers
+                    <p className="text-xs tracking-[0.3em] uppercase text-amber-600 font-sans font-bold">
+                        {data.eyebrow}
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-serif font-light text-white">
-                        Our Journey So Far
+                    <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
+                        {data.heading}
                     </h2>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((s) => <StatCard key={s.label} {...s} />)}
+                    {data.stats.map((s) => <StatCard key={s.label} {...s} />)}
                 </div>
             </div>
         </section>

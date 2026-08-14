@@ -1,97 +1,55 @@
 import React from 'react';
 import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
+import { PricingSectionData } from '@/lib/types/packages';
 
-const packages = [
-    {
-        name: 'Silver',
-        tagline: 'Perfect for intimate moments',
-        price: '৳ 25,000',
-        unit: 'per event',
-        featured: false,
-        features: [
-            '6 Hours Coverage',
-            '200+ Edited Photos',
-            'Online Gallery',
-            '1 Photographer',
-            'Basic Highlight Reel',
-        ],
-    },
-    {
-        name: 'Gold',
-        tagline: 'Our most loved package',
-        price: '৳ 45,000',
-        unit: 'per event',
-        featured: true,
-        features: [
-            'Full Day Coverage',
-            '400+ Edited Photos',
-            'Cinematic Highlight Video',
-            '2 Photographers',
-            'Luxury Printed Album',
-            'Online Gallery (1 Year)',
-        ],
-    },
-    {
-        name: 'Platinum',
-        tagline: 'The complete experience',
-        price: '৳ 75,000',
-        unit: 'per event',
-        featured: false,
-        features: [
-            '2-Day Full Coverage',
-            '600+ Edited Photos',
-            'Full Wedding Film',
-            '3 Photographers',
-            'Luxury Heirloom Album',
-            'Drone Aerial Shots',
-            'Same-Day Preview',
-        ],
-    },
-];
+interface PackageCardsProps {
+    data: PricingSectionData;
+}
 
-const PackageCards = () => {
+const PackageCards = ({ data }: PackageCardsProps) => {
     return (
-        <section className="relative w-full bg-neutral-950 py-28 px-6 md:px-12 overflow-hidden">
+        <section className="relative w-full bg-[#e2e8f0] py-28 px-6 md:px-12 overflow-hidden text-slate-800 border-t border-b border-slate-300">
 
             {/* Subtle background gradient blob */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-red-900/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-400/10 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="relative max-w-6xl mx-auto">
 
                 {/* Section Header */}
                 <div className="text-center mb-16 space-y-4">
-                    <p className="text-xs tracking-[0.4em] uppercase text-red-600 font-sans">
-                        Investment
+                    <p className="text-xs tracking-[0.4em] uppercase text-amber-600 font-sans font-bold">
+                        {data.sectionEyebrow}
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-serif font-light text-white">
-                        Choose Your <em className="not-italic text-red-500">Story</em>
+                    <h2 className="text-4xl md:text-5xl font-serif font-medium text-slate-900">
+                        {data.sectionHeading}{' '}
+                        <em className="not-italic text-amber-600 font-serif font-bold">{data.sectionHeadingAccent}</em>
                     </h2>
-                    <p className="text-gray-500 font-sans text-sm max-w-md mx-auto">
-                        Every package includes full post-processing, private online gallery, and a dedicated story editor.
+                    <p className="text-slate-700 font-sans text-sm max-w-md mx-auto font-medium">
+                        {data.sectionDesc}
                     </p>
                     <div className="flex items-center justify-center gap-3">
-                        <div className="h-px w-16 bg-red-700/40" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-700" />
-                        <div className="h-px w-16 bg-red-700/40" />
+                        <div className="h-px w-16 bg-amber-500/40" />
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        <div className="h-px w-16 bg-amber-500/40" />
                     </div>
                 </div>
 
                 {/* Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                    {packages.map((pkg) => (
+                    {data.packages.map((pkg) => (
                         <div
                             key={pkg.name}
-                            className={`relative rounded-sm transition-all duration-300 ${pkg.featured
-                                ? 'bg-gradient-to-b from-red-950/60 to-neutral-900/80 border border-red-700/40 shadow-2xl shadow-red-950/30 md:-mt-6 md:pb-2'
-                                : 'bg-white/[0.03] border border-white/8 hover:border-white/15'
+                            className={`relative rounded-2xl transition-all duration-300 ${pkg.featured
+                                ? 'bg-white border-2 border-amber-500 shadow-xl md:-mt-6 md:pb-2'
+                                : 'bg-slate-100/90 border border-slate-300 hover:border-amber-500/60 shadow-md'
                                 }`}
                         >
                             {/* Popular badge */}
                             {pkg.featured && (
                                 <div className="absolute -top-4 left-0 right-0 flex justify-center">
-                                    <span className="flex items-center gap-1.5 bg-red-700 text-white text-[10px] tracking-widest uppercase font-sans px-5 py-1.5 rounded-full shadow-lg">
-                                        <Sparkles size={10} />
+                                    <span className="flex items-center gap-1.5 bg-amber-400 text-slate-950 text-[10px] tracking-widest uppercase font-sans font-bold px-5 py-1.5 rounded-full shadow-md">
+                                        <Sparkles size={11} />
                                         Most Popular
                                     </span>
                                 </div>
@@ -99,24 +57,24 @@ const PackageCards = () => {
 
                             <div className="p-8 space-y-6">
                                 {/* Package name + tagline */}
-                                <div className="border-b border-white/8 pb-5">
-                                    <h3 className="text-2xl font-serif text-white mb-1">{pkg.name}</h3>
-                                    <p className="text-gray-500 text-xs font-sans">{pkg.tagline}</p>
+                                <div className="border-b border-slate-200 pb-5">
+                                    <h3 className="text-2xl font-serif text-slate-900 font-bold mb-1">{pkg.name}</h3>
+                                    <p className="text-slate-600 text-xs font-sans font-medium">{pkg.tagline}</p>
                                 </div>
 
                                 {/* Price */}
                                 <div className="space-y-0.5">
-                                    <p className={`text-4xl font-light ${pkg.featured ? 'text-red-400' : 'text-white'}`}>
+                                    <p className={`text-4xl font-bold ${pkg.featured ? 'text-amber-700' : 'text-slate-900'}`}>
                                         {pkg.price}
                                     </p>
-                                    <p className="text-gray-600 text-xs font-sans uppercase tracking-wider">{pkg.unit}</p>
+                                    <p className="text-slate-500 text-xs font-sans uppercase tracking-wider font-semibold">{pkg.unit}</p>
                                 </div>
 
                                 {/* Features list */}
                                 <ul className="space-y-3">
                                     {pkg.features.map((feature) => (
-                                        <li key={feature} className="flex items-center gap-3 text-sm font-sans text-gray-400">
-                                            <span className={`flex items-center justify-center w-4 h-4 rounded-full border shrink-0 ${pkg.featured ? 'border-red-700/50 text-red-500' : 'border-white/20 text-gray-500'}`}>
+                                        <li key={feature} className="flex items-center gap-3 text-sm font-sans text-slate-800 font-medium">
+                                            <span className={`flex items-center justify-center w-4 h-4 rounded-full border shrink-0 ${pkg.featured ? 'border-amber-500 text-amber-700 bg-amber-400/20' : 'border-slate-400 text-slate-600 bg-slate-200'}`}>
                                                 <Check size={9} />
                                             </span>
                                             {feature}
@@ -127,9 +85,9 @@ const PackageCards = () => {
                                 {/* CTA button */}
                                 <Link
                                     href="/contact"
-                                    className={`block text-center py-3.5 text-xs tracking-widest uppercase font-sans transition-all duration-300 ${pkg.featured
-                                        ? 'bg-red-700 hover:bg-red-600 text-white'
-                                        : 'border border-white/20 text-white hover:bg-white hover:text-black'
+                                    className={`block text-center py-3.5 rounded-xl text-xs tracking-widest uppercase font-sans font-bold transition-all duration-300 ${pkg.featured
+                                        ? 'bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-md'
+                                        : 'bg-slate-200 border border-slate-300 text-slate-900 hover:bg-amber-400 hover:text-slate-950 hover:border-amber-400'
                                         }`}
                                 >
                                     Book This Package
@@ -140,11 +98,17 @@ const PackageCards = () => {
                 </div>
 
                 {/* Bottom nudge */}
-                <p className="text-center text-gray-600 text-xs font-sans mt-10">
-                    Need something custom?{' '}
-                    <Link href="/contact" className="text-red-500 hover:text-red-400 underline underline-offset-4 transition-colors">
-                        Let&apos;s talk.
-                    </Link>
+                <p className="text-center text-slate-600 text-xs font-sans mt-10 font-medium">
+                    {data.noteText.includes("Let's talk") || data.noteText.includes("Let") ? (
+                        <>
+                            {data.noteText.split(/Let['']s talk/)[0]}
+                            <Link href="/contact" className="text-amber-700 hover:text-amber-800 underline underline-offset-4 transition-colors font-bold">
+                                Let&apos;s talk.
+                            </Link>
+                        </>
+                    ) : (
+                        data.noteText
+                    )}
                 </p>
             </div>
         </section>

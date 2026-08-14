@@ -1,13 +1,12 @@
 import React from 'react';
 
-// WhatsApp number – update to actual number
-const WHATSAPP_NUMBER = '8801700000000';
-const WHATSAPP_MESSAGE = encodeURIComponent(
-    "Hello! I'm interested in booking The Story for my wedding. Can we discuss?"
-);
+interface WhatsAppCTAProps {
+    whatsappNumber: string;
+    whatsappMessage: string;
+}
 
-const WhatsAppCTA = () => {
-    const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
+const WhatsAppCTA = ({ whatsappNumber, whatsappMessage }: WhatsAppCTAProps) => {
+    const href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
     return (
         <div className="mt-8">

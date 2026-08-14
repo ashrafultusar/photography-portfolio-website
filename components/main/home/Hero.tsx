@@ -4,31 +4,27 @@ import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
 import Image from 'next/image';
+import { HeroSectionData } from '@/lib/types/hero';
 
-const sliderImages = [
-    {
-        id: 1,
-        src: '/hero/1.jpg',
-        alt: 'Shondhikkhon Wedding Couple Walking in Outdoor Nature Setting',
-    },
-    {
-        id: 2,
-        src: '/hero/2.jpg',
-        alt: 'Happy Bride and Groom Smiling During Wedding Ceremony',
-    },
-    {
-        id: 3,
-        src: '/hero/3.jpg',
-        alt: 'Beautiful Wedding Photography and Details',
-    },
-    {
-        id: 4,
-        src: '/hero/4.jpg',
-        alt: 'Beautiful Wedding Photography and Details',
-    },
+interface HeroProps {
+    data?: HeroSectionData;
+}
+
+const defaultImages = [
+    { src: '/hero/1.jpg', alt: 'Shondhikkhon Wedding Couple Walking in Outdoor Nature Setting' },
+    { src: '/hero/2.jpg', alt: 'Happy Bride and Groom Smiling During Wedding Ceremony' },
+    { src: '/hero/3.jpg', alt: 'Beautiful Wedding Photography and Details' },
+    { src: '/hero/4.jpg', alt: 'Beautiful Wedding Photography and Details' },
 ];
 
-const Hero = () => {
+const Hero: React.FC<HeroProps> = ({ data }) => {
+    const subtitle = data?.subtitle || 'WEDDING & EVENT PHOTOGRAPHY';
+    const title = data?.title || 'The Story';
+    const description = data?.description || 'Capturing your eternal moments with cinematic elegance.';
+    const buttonText = data?.buttonText || 'Book Us';
+    const buttonLink = data?.buttonLink || '#book-us';
+    const images = data?.images && data.images.length > 0 ? data.images : defaultImages;
+
     return (
         <section
             className="relative w-full h-screen overflow-hidden font-serif"
@@ -49,11 +45,11 @@ const Hero = () => {
                 loop={true}
                 className="w-full h-full hero-swiper"
             >
-                {sliderImages.map((image, index) => (
-                    <SwiperSlide key={image.id} className="relative w-full h-full">
+                {images.map((image, index) => (
+                    <SwiperSlide key={index} className="relative w-full h-full">
                         <Image
                             src={image.src}
-                            alt={image.alt}
+                            alt={image.alt || title}
                             fill
                             /* Only first image gets priority for fast LCP */
                             priority={index === 0}
@@ -72,21 +68,21 @@ const Hero = () => {
 
             {/* Hero text overlay */}
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
-                <p className="text-xs md:text-sm tracking-[0.4em] uppercase text-gray-300 mb-4 font-sans">
-                    Wedding &amp; Event Photography
+                <p className="text-xs md:text-sm tracking-[0.4em] uppercase text-yellow-400 mb-4 font-sans font-semibold">
+                    {subtitle}
                 </p>
-                <h1 className="text-5xl md:text-7xl xl:text-8xl font-serif font-light text-white leading-tight">
-                    The Story
+                <h1 className="text-5xl md:text-7xl xl:text-8xl font-serif font-light text-yellow-400 leading-tight drop-shadow-md">
+                    {title}
                 </h1>
-                <div className="w-16 h-px bg-red-600 my-6" />
-                <p className="text-base md:text-lg text-gray-300 font-sans font-light max-w-md">
-                    Capturing your eternal moments with cinematic elegance.
+                <div className="w-16 h-px bg-yellow-400 my-6" />
+                <p className="text-base md:text-lg text-slate-200 font-sans font-light max-w-md">
+                    {description}
                 </p>
                 <a
-                    href="#book-us"
-                    className="pointer-events-auto mt-10 px-10 py-3 border border-white text-white text-xs tracking-widest uppercase font-sans hover:bg-white hover:text-black transition-all duration-300"
+                    href={buttonLink}
+                    className="pointer-events-auto mt-10 px-10 py-3.5 bg-yellow-400 hover:bg-yellow-500 text-slate-950 text-xs tracking-widest uppercase font-sans font-bold transition-all duration-300 rounded-sm shadow-xl shadow-yellow-500/10"
                 >
-                    Book Us
+                    {buttonText}
                 </a>
             </div>
         </section>

@@ -14,12 +14,12 @@ const ContactForm = () => {
 
     if (submitted) {
         return (
-            <div className="text-center py-16">
-                <div className="w-14 h-14 rounded-full border border-red-600 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-red-500 text-2xl">✓</span>
+            <div className="text-center py-16 bg-white/90 border border-slate-300 rounded-sm shadow-sm">
+                <div className="w-14 h-14 rounded-full border-2 border-amber-500 bg-amber-400/20 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-amber-700 text-2xl font-bold">✓</span>
                 </div>
-                <h3 className="text-white font-serif text-2xl mb-2">Message Received!</h3>
-                <p className="text-gray-400 font-sans text-sm">
+                <h3 className="text-slate-900 font-serif text-2xl font-bold mb-2">Message Received!</h3>
+                <p className="text-slate-700 font-sans text-sm font-medium">
                     We&apos;ll get back to you within 24 hours.
                 </p>
             </div>
@@ -30,71 +30,71 @@ const ContactForm = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs tracking-widest uppercase text-gray-500 font-sans mb-2">
+                    <label className="block text-xs tracking-widest uppercase text-slate-700 font-sans font-bold mb-2">
                         Your Name
                     </label>
                     <input
                         type="text"
                         required
                         placeholder="Rahim & Rima"
-                        className="w-full bg-white/5 border border-white/15 text-white placeholder-gray-600 px-4 py-3 text-sm font-sans focus:outline-none focus:border-red-600/60 transition rounded-sm"
+                        className="w-full bg-white border border-slate-300 text-slate-900 placeholder-slate-400 px-4 py-3 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition rounded-sm shadow-sm"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs tracking-widest uppercase text-gray-500 font-sans mb-2">
+                    <label className="block text-xs tracking-widest uppercase text-slate-700 font-sans font-bold mb-2">
                         Email Address
                     </label>
                     <input
                         type="email"
                         required
                         placeholder="you@example.com"
-                        className="w-full bg-white/5 border border-white/15 text-white placeholder-gray-600 px-4 py-3 text-sm font-sans focus:outline-none focus:border-red-600/60 transition rounded-sm"
+                        className="w-full bg-white border border-slate-300 text-slate-900 placeholder-slate-400 px-4 py-3 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition rounded-sm shadow-sm"
                     />
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs tracking-widest uppercase text-gray-500 font-sans mb-2">
+                    <label className="block text-xs tracking-widest uppercase text-slate-700 font-sans font-bold mb-2">
                         Phone Number
                     </label>
                     <input
                         type="tel"
                         placeholder="+880 17XXXXXXXX"
-                        className="w-full bg-white/5 border border-white/15 text-white placeholder-gray-600 px-4 py-3 text-sm font-sans focus:outline-none focus:border-red-600/60 transition rounded-sm"
+                        className="w-full bg-white border border-slate-300 text-slate-900 placeholder-slate-400 px-4 py-3 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition rounded-sm shadow-sm"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs tracking-widest uppercase text-gray-500 font-sans mb-2">
+                    <label className="block text-xs tracking-widest uppercase text-slate-700 font-sans font-bold mb-2">
                         Event Date
                     </label>
                     <input
                         type="date"
-                        className="w-full bg-white/5 border border-white/15 text-white px-4 py-3 text-sm font-sans focus:outline-none focus:border-red-600/60 transition rounded-sm [color-scheme:dark]"
+                        className="w-full bg-white border border-slate-300 text-slate-900 px-4 py-3 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition rounded-sm shadow-sm [color-scheme:light]"
                     />
                 </div>
             </div>
             <div>
-                <label className="block text-xs tracking-widest uppercase text-gray-500 font-sans mb-2">
+                <label className="block text-xs tracking-widest uppercase text-slate-700 font-sans font-bold mb-2">
                     Package Interest
                 </label>
-                <select className="w-full bg-neutral-900 border border-white/15 text-gray-300 px-4 py-3 text-sm font-sans focus:outline-none focus:border-red-600/60 transition rounded-sm">
+                <select className="w-full bg-white border border-slate-300 text-slate-900 px-4 py-3 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition rounded-sm shadow-sm">
                     <option value="">Select a package</option>
                     {packages.map((p) => <option key={p}>{p}</option>)}
                 </select>
             </div>
             <div>
-                <label className="block text-xs tracking-widest uppercase text-gray-500 font-sans mb-2">
+                <label className="block text-xs tracking-widest uppercase text-slate-700 font-sans font-bold mb-2">
                     Tell Us About Your Event
                 </label>
                 <textarea
                     rows={4}
                     placeholder="Wedding venue, guest count, special requests..."
-                    className="w-full bg-white/5 border border-white/15 text-white placeholder-gray-600 px-4 py-3 text-sm font-sans focus:outline-none focus:border-red-600/60 transition resize-none rounded-sm"
+                    className="w-full bg-white border border-slate-300 text-slate-900 placeholder-slate-400 px-4 py-3 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition resize-none rounded-sm shadow-sm"
                 />
             </div>
             <button
                 type="submit"
-                className="w-full bg-red-800 hover:bg-red-700 text-white py-3 text-sm tracking-widest uppercase font-sans transition-all duration-300 rounded-sm"
+                className="w-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold py-3.5 text-xs tracking-widest uppercase font-sans transition-all duration-300 rounded-sm shadow-md"
             >
                 Send Message
             </button>

@@ -4,17 +4,32 @@ import About from '@/components/main/home/About';
 import Portfolio from '@/components/main/home/Portfolio';
 import PackageCards from '@/components/main/package/PackageCards';
 import QuoteCTA from '@/components/main/home/QuoteCTA';
+import { getHeroData } from '@/lib/data/heroData';
+import { getPortfolioAlbumsSummaryData } from '@/lib/data/portfolioData';
+import { getPackagesPageData } from '@/lib/data/packagesData';
+import { getAboutPageData } from '@/lib/data/aboutData';
 
-export default function HomePage() {
+// Ensure real-time database data fetching on every request
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function HomePage() {
+    const [heroData, portfolioAlbums, packagesData, aboutData] = await Promise.all([
+        getHeroData(),
+        getPortfolioAlbumsSummaryData(),
+        getPackagesPageData(),
+        getAboutPageData(),
+    ]);
+
     return (
         <>
             <section id="home">
-                <Hero />
+                <Hero data={heroData} />
             </section>
-            <About />
-            <Portfolio />
+            <About data={aboutData.homeSection} />
+            <Portfolio albums={portfolioAlbums} />
             <QuoteCTA />
-            <PackageCards />
+            <PackageCards data={packagesData.pricingSection} />
         </>
     );
 }

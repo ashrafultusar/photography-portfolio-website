@@ -6,8 +6,8 @@
 @import "swiper/css/effect-fade";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #e2e8f0;
+  --foreground: #0f172a;
 }
 
 html,
@@ -32,7 +32,7 @@ body {
 }
 
 .custom-bullet-active {
-  background-color: #ffffff !important;
+  background-color: #f59e0b !important;
   transform: scale(1.4) !important;
 }
 

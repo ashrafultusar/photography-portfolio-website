@@ -1,24 +1,17 @@
 import React from 'react';
-import PageHero from '@/components/main/shared/PageHero';
-import PackageCards from '@/components/main/package/PackageCards';
-import AddOnsSection from '@/components/main/package/AddOnsSection';
+import PackagePage from '@/components/main/package/PackagePage';
+import { getPackagesPageData } from '@/lib/data/packagesData';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
-    title: 'Packages | The Story Photography',
-    description: 'Explore our photography & videography packages. Silver, Gold, and Platinum tiers plus premium add-ons.',
+    title: 'Packages & Pricing | The Story Photography',
+    description: 'Explore transparent wedding photography packages — Silver, Gold, and Platinum — crafted for every couple\'s dream day in Dhaka, Bangladesh.',
 };
 
-export default function PackagesPage() {
-    return (
-        <>
-            <PageHero
-                eyebrow="Pricing"
-                heading="Our Packages"
-                subtext="Transparent pricing crafted to suit every couple's dream day."
-                bgImage="/hero/4.jpg"
-            />
-            <PackageCards />
-            <AddOnsSection />
-        </>
-    );
+export default async function PackagesRoute() {
+    const data = await getPackagesPageData();
+
+    return <PackagePage data={data} />;
 }
