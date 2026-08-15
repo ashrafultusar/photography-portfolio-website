@@ -1,6 +1,7 @@
 import { connectDB } from "@/db/dbConfig";
 import ContactPage from "@/models/ContactPage";
 import { ContactPageData } from "@/lib/types/contact";
+import { unstable_cache } from "next/cache";
 
 const FALLBACK: ContactPageData = {
     heroEyebrow: "Let's Connect",
@@ -24,36 +25,41 @@ const FALLBACK: ContactPageData = {
     hoursRow2Value: "By Appointment",
 };
 
-export async function getContactPageData(): Promise<ContactPageData> {
-    try {
-        await connectDB();
-        const doc: any = await ContactPage.findOne().lean();
+export const getContactPageData = unstable_cache(
+    async (): Promise<ContactPageData> => {
+        try {
+            await connectDB();
+            const doc: any = await ContactPage.findOne().lean();
 
-        if (doc) {
-            return {
-                heroEyebrow: doc.heroEyebrow || FALLBACK.heroEyebrow,
-                heroHeading: doc.heroHeading || FALLBACK.heroHeading,
-                heroSubtext: doc.heroSubtext || FALLBACK.heroSubtext,
-                heroBgImage: doc.heroBgImage || FALLBACK.heroBgImage,
-                formEyebrow: doc.formEyebrow || FALLBACK.formEyebrow,
-                formHeading: doc.formHeading || FALLBACK.formHeading,
-                phone: doc.phone || FALLBACK.phone,
-                phoneHref: doc.phoneHref || FALLBACK.phoneHref,
-                email: doc.email || FALLBACK.email,
-                emailHref: doc.emailHref || FALLBACK.emailHref,
-                studioAddress: doc.studioAddress || FALLBACK.studioAddress,
-                studioMapsUrl: doc.studioMapsUrl || FALLBACK.studioMapsUrl,
-                whatsappNumber: doc.whatsappNumber || FALLBACK.whatsappNumber,
-                whatsappMessage: doc.whatsappMessage || FALLBACK.whatsappMessage,
-                hoursRow1Label: doc.hoursRow1Label || FALLBACK.hoursRow1Label,
-                hoursRow1Value: doc.hoursRow1Value || FALLBACK.hoursRow1Value,
-                hoursRow2Label: doc.hoursRow2Label || FALLBACK.hoursRow2Label,
-                hoursRow2Value: doc.hoursRow2Value || FALLBACK.hoursRow2Value,
-            };
+            if (doc) {
+                return {
+                    heroEyebrow: doc.heroEyebrow || FALLBACK.heroEyebrow,
+                    heroHeading: doc.heroHeading || FALLBACK.heroHeading,
+                    heroSubtext: doc.heroSubtext || FALLBACK.heroSubtext,
+                    heroBgImage: doc.heroBgImage || FALLBACK.heroBgImage,
+                    formEyebrow: doc.formEyebrow || FALLBACK.formEyebrow,
+                    formHeading: doc.formHeading || FALLBACK.formHeading,
+                    phone: doc.phone || FALLBACK.phone,
+                    phoneHref: doc.phoneHref || FALLBACK.phoneHref,
+                    email: doc.email || FALLBACK.email,
+                    emailHref: doc.emailHref || FALLBACK.emailHref,
+                    studioAddress: doc.studioAddress || FALLBACK.studioAddress,
+                    studioMapsUrl: doc.studioMapsUrl || FALLBACK.studioMapsUrl,
+                    whatsappNumber: doc.whatsappNumber || FALLBACK.whatsappNumber,
+                    whatsappMessage: doc.whatsappMessage || FALLBACK.whatsappMessage,
+                    hoursRow1Label: doc.hoursRow1Label || FALLBACK.hoursRow1Label,
+                    hoursRow1Value: doc.hoursRow1Value || FALLBACK.hoursRow1Value,
+                    hoursRow2Label: doc.hoursRow2Label || FALLBACK.hoursRow2Label,
+                    hoursRow2Value: doc.hoursRow2Value || FALLBACK.hoursRow2Value,
+                };
+            }
+        } catch (error) {
+            console.error("Error fetching ContactPage data:", error);
         }
-    } catch (error) {
-        console.error("Error fetching ContactPage data:", error);
-    }
 
-    return FALLBACK;
-}
+        return FALLBACK;
+    },
+    ["contact-page-cache"],
+    { tags: ["contact"], revalidate: 3600 }
+);
+

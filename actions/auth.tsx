@@ -139,7 +139,7 @@ export async function authenticate(
   try {
     const user = await User.findOne({ email: email }).select("role");
     if (user?.role === "admin") {
-      redirect("/admin/my-dashboard");
+      redirect("/my-dashboard");
     } else {
       redirect("/");
     }
@@ -153,3 +153,4 @@ export async function authenticate(
 export async function logout() {
   await signOut({ redirectTo: "/login" });
 }
+

@@ -1,6 +1,7 @@
 import { connectDB } from "@/db/dbConfig";
 import Footer from "@/models/Footer";
 import { FooterData } from "@/lib/types/footer";
+import { unstable_cache } from "next/cache";
 
 const FALLBACK_FOOTER: FooterData = {
     logoUrl: "/logo.jpeg",
@@ -25,39 +26,44 @@ const FALLBACK_FOOTER: FooterData = {
 };
 
 /**
- * GET Footer & Brand settings directly from MongoDB in real-time
+ * GET Footer & Brand settings from MongoDB (cached)
  */
-export async function getFooterData(): Promise<FooterData> {
-    try {
-        await connectDB();
-        const footer: any = await Footer.findOne().lean();
+export const getFooterData = unstable_cache(
+    async (): Promise<FooterData> => {
+        try {
+            await connectDB();
+            const footer: any = await Footer.findOne().lean();
 
-        if (footer) {
-            return {
-                logoUrl: footer.logoUrl || FALLBACK_FOOTER.logoUrl,
-                brandName: footer.brandName || FALLBACK_FOOTER.brandName,
-                brandLogoText: footer.brandLogoText || FALLBACK_FOOTER.brandLogoText,
-                bio: footer.bio || FALLBACK_FOOTER.bio,
-                location: footer.location || FALLBACK_FOOTER.location,
-                phone: footer.phone || FALLBACK_FOOTER.phone,
-                email: footer.email || FALLBACK_FOOTER.email,
-                facebookUrl: footer.facebookUrl || FALLBACK_FOOTER.facebookUrl,
-                instagramUrl: footer.instagramUrl || FALLBACK_FOOTER.instagramUrl,
-                youtubeUrl: footer.youtubeUrl || FALLBACK_FOOTER.youtubeUrl,
-                whatsappNumber: footer.whatsappNumber || FALLBACK_FOOTER.whatsappNumber,
-                copyrightText: footer.copyrightText || FALLBACK_FOOTER.copyrightText,
-                quickLinks:
-                    footer.quickLinks && footer.quickLinks.length > 0
-                        ? footer.quickLinks.map((item: any) => ({
-                            name: item.name,
-                            href: item.href,
-                        }))
-                        : FALLBACK_FOOTER.quickLinks,
-            };
+            if (footer) {
+                return {
+                    logoUrl: footer.logoUrl || FALLBACK_FOOTER.logoUrl,
+                    brandName: footer.brandName || FALLBACK_FOOTER.brandName,
+                    brandLogoText: footer.brandLogoText || FALLBACK_FOOTER.brandLogoText,
+                    bio: footer.bio || FALLBACK_FOOTER.bio,
+                    location: footer.location || FALLBACK_FOOTER.location,
+                    phone: footer.phone || FALLBACK_FOOTER.phone,
+                    email: footer.email || FALLBACK_FOOTER.email,
+                    facebookUrl: footer.facebookUrl || FALLBACK_FOOTER.facebookUrl,
+                    instagramUrl: footer.instagramUrl || FALLBACK_FOOTER.instagramUrl,
+                    youtubeUrl: footer.youtubeUrl || FALLBACK_FOOTER.youtubeUrl,
+                    whatsappNumber: footer.whatsappNumber || FALLBACK_FOOTER.whatsappNumber,
+                    copyrightText: footer.copyrightText || FALLBACK_FOOTER.copyrightText,
+                    quickLinks:
+                        footer.quickLinks && footer.quickLinks.length > 0
+                            ? footer.quickLinks.map((item: any) => ({
+                                name: item.name,
+                                href: item.href,
+                            }))
+                            : FALLBACK_FOOTER.quickLinks,
+                };
+            }
+        } catch (error) {
+            console.error("Error fetching Footer data:", error);
         }
-    } catch (error) {
-        console.error("Error fetching Footer data:", error);
-    }
 
-    return FALLBACK_FOOTER;
-}
+        return FALLBACK_FOOTER;
+    },
+    ["footer-data-cache"],
+    { tags: ["footer"], revalidate: 3600 }
+);
+

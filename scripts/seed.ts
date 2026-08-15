@@ -28,12 +28,11 @@ const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 const ADMIN = {
     name: "The Story Admin",
-    email: "admin@thestory.com",   // ← Change this
-    password: "Admin@12345",       // ← Change this (min 6 chars)
+    email: "admin@thestory.com",   
+    password: "Admin@12345",       
     role: "admin" as const,
 };
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function seed() {
     const uri = process.env.MONGO_URI;

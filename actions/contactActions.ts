@@ -3,7 +3,7 @@
 import { connectDB } from "@/db/dbConfig";
 import ContactPage from "@/models/ContactPage";
 import { ContactPageData } from "@/lib/types/contact";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function updateContactPageAction(data: ContactPageData) {
     try {
@@ -18,8 +18,10 @@ export async function updateContactPageAction(data: ContactPageData) {
             doc = await ContactPage.create(data);
         }
 
+        (revalidateTag as any)("contact");
         revalidatePath("/contact");
         revalidatePath("/my-dashboard/contact");
+
 
         return {
             success: true,
