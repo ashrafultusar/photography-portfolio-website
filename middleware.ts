@@ -15,6 +15,13 @@ export default auth((req: NextAuthRequest) => {
     const isLoggedIn = !!session;
     const userRole = (session?.user as { role?: string } | undefined)?.role;
 
+    // Dynamically resolve true request origin from proxy headers
+    const rawHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || nextUrl.host;
+    const host = rawHost.split(",")[0].trim();
+    const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+    const proto = req.headers.get("x-forwarded-proto") || (isLocal ? "http" : "https");
+    const origin = `${proto}://${host}`;
+
     const isAdminRoute =
         nextUrl.pathname.startsWith("/admin") ||
         nextUrl.pathname.startsWith("/my-dashboard");
@@ -36,14 +43,14 @@ export default auth((req: NextAuthRequest) => {
     // 1. Protect all /my-dashboard/* and /admin/* routes
     if (isAdminRoute) {
         if (!isLoggedIn) {
-            const loginUrl = new URL("/login", req.url);
+            const loginUrl = new URL(`${origin}/login`);
             loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
             return addNoCacheHeaders(NextResponse.redirect(loginUrl));
         }
 
         if (userRole !== "admin") {
             // Authenticated but not admin → redirect to home
-            return addNoCacheHeaders(NextResponse.redirect(new URL("/", req.url)));
+            return addNoCacheHeaders(NextResponse.redirect(new URL(`${origin}/`)));
         }
 
         const response = NextResponse.next();
@@ -53,13 +60,14 @@ export default auth((req: NextAuthRequest) => {
     // 2. Redirect already-logged-in users away from auth pages
     if (isAuthRoute && isLoggedIn) {
         if (userRole === "admin") {
-            return addNoCacheHeaders(NextResponse.redirect(new URL("/my-dashboard", req.url)));
+            return addNoCacheHeaders(NextResponse.redirect(new URL(`${origin}/my-dashboard`)));
         }
-        return addNoCacheHeaders(NextResponse.redirect(new URL("/", req.url)));
+        return addNoCacheHeaders(NextResponse.redirect(new URL(`${origin}/`)));
     }
 
     return NextResponse.next();
 });
+
 
 
 export const config = {
