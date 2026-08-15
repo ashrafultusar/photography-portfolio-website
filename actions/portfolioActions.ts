@@ -139,11 +139,28 @@ export async function createPortfolioAlbum(data: AlbumInputData) {
 export async function getPortfolioAlbums() {
     try {
         await connectDB();
-        const albums = await Portfolio.find().sort({ createdAt: -1 }).lean();
-        // .lean() returns plain JS objects — no Mongoose overhead, no need for JSON round-trip serialization
+        // Exclude heavy `images` array from list view to keep initial load instantaneous (< 100ms)
+        const albums = await Portfolio.find()
+            .select("title slug category clientName eventDate location coverImage description featured")
+            .sort({ createdAt: -1 })
+            .lean();
+
         return {
             success: true,
-            albums: albums.map((a: any) => ({ ...a, _id: a._id.toString() })),
+            albums: albums.map((a: any) => ({
+                id: a._id?.toString() || a.id || "",
+                slug: a.slug,
+                title: a.title,
+                category: a.category,
+                clientName: a.clientName || "",
+                eventDate: a.eventDate || "",
+                location: a.location || "",
+                coverImage: a.coverImage || "",
+                photoCount: 0,
+                description: a.description || "",
+                featured: a.featured || false,
+                images: [],
+            })),
         };
     } catch (error: any) {
         console.error("Get portfolio albums error:", error);

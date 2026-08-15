@@ -17,9 +17,10 @@ interface NavbarProps {
   logoUrl?: string;
   brandName?: string;
   brandLogoText?: string;
+  isAdmin?: boolean;
 }
 
-const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", brandLogoText = "MTM" }: NavbarProps) => {
+const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", brandLogoText = "MTM", isAdmin = false }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -94,7 +95,15 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
         </nav>
 
         {/* CTA Button */}
-        <div className="hidden md:block">
+        <div className="hidden md:flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              href="/my-dashboard"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 text-xs tracking-widest uppercase font-sans font-bold transition-all duration-300 rounded-sm shadow-md border border-slate-700"
+            >
+              Admin Panel
+            </Link>
+          )}
           <Link
             href="/contact"
             className="px-6 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs tracking-widest uppercase font-sans font-bold transition-all duration-300 rounded-sm shadow-md"
@@ -129,6 +138,15 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
               {link.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              href="/my-dashboard"
+              onClick={() => setMobileOpen(false)}
+              className="block text-center mt-4 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-amber-400 text-xs tracking-widest uppercase font-sans font-bold rounded-sm shadow-md border border-slate-700"
+            >
+              Admin Panel
+            </Link>
+          )}
           <Link
             href="/contact"
             onClick={() => setMobileOpen(false)}

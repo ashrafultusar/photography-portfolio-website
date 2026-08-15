@@ -18,40 +18,38 @@ const FALLBACK_HERO: HeroSectionData = {
 };
 
 /**
- * GET Hero section content and slider images directly from MongoDB in real-time
+ * GET Hero section content and slider images directly from MongoDB with proper module-level caching
  */
-export async function getHeroData(): Promise<HeroSectionData> {
-    const cachedFetch = unstable_cache(
-        async (): Promise<HeroSectionData> => {
-            try {
-                await connectDB();
-                const hero: any = await Hero.findOne().lean();
+export const getHeroData = unstable_cache(
+    async (): Promise<HeroSectionData> => {
+        try {
+            await connectDB();
+            const hero: any = await Hero.findOne()
+                .select("subtitle title description buttonText buttonLink images")
+                .lean();
 
-                if (hero) {
-                    return {
-                        subtitle: hero.subtitle || FALLBACK_HERO.subtitle,
-                        title: hero.title || FALLBACK_HERO.title,
-                        description: hero.description || FALLBACK_HERO.description,
-                        buttonText: hero.buttonText || FALLBACK_HERO.buttonText,
-                        buttonLink: hero.buttonLink || FALLBACK_HERO.buttonLink,
-                        images:
-                            hero.images && hero.images.length > 0
-                                ? hero.images.map((img: any) => ({
-                                    src: img.src,
-                                    alt: img.alt || "Photography Hero Slider Image",
-                                }))
-                                : FALLBACK_HERO.images,
-                    };
-                }
-            } catch (error) {
-                console.error("Error fetching Hero section data:", error);
+            if (hero) {
+                return {
+                    subtitle: hero.subtitle || FALLBACK_HERO.subtitle,
+                    title: hero.title || FALLBACK_HERO.title,
+                    description: hero.description || FALLBACK_HERO.description,
+                    buttonText: hero.buttonText || FALLBACK_HERO.buttonText,
+                    buttonLink: hero.buttonLink || FALLBACK_HERO.buttonLink,
+                    images:
+                        hero.images && hero.images.length > 0
+                            ? hero.images.map((img: any) => ({
+                                src: img.src,
+                                alt: img.alt || "Photography Hero Slider Image",
+                            }))
+                            : FALLBACK_HERO.images,
+                };
             }
+        } catch (error) {
+            console.error("Error fetching Hero section data:", error);
+        }
 
-            return FALLBACK_HERO;
-        },
-        ["hero-data-cache"],
-        { tags: ["hero"], revalidate: 3600 }
-    );
-
-    return cachedFetch();
-}
+        return FALLBACK_HERO;
+    },
+    ["hero-data-cache"],
+    { tags: ["hero"], revalidate: 3600 }
+);

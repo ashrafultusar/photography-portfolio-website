@@ -6,8 +6,6 @@ import StatsSection from '@/components/main/about/StatsSection';
 import WhyChooseUs from '@/components/main/about/WhyChooseUs';
 import { getAboutPageData } from '@/lib/data/aboutData';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export const metadata = {
     title: 'About Us | The Story Photography',

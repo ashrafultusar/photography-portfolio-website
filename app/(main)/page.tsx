@@ -9,9 +9,6 @@ import { getPortfolioAlbumsSummaryData } from '@/lib/data/portfolioData';
 import { getPackagesPageData } from '@/lib/data/packagesData';
 import { getAboutPageData } from '@/lib/data/aboutData';
 
-// Ensure real-time database data fetching on every request
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export default async function HomePage() {
     const [heroData, portfolioAlbums, packagesData, aboutData] = await Promise.all([
