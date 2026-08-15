@@ -8,8 +8,10 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
+    trustHost: true,
     providers: [],
     // We define the full Credentials provider in auth.ts (Node.js runtime only).
+
     // Middleware only needs JWT/session callbacks for role-based routing.
 
     callbacks: {

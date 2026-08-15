@@ -36,14 +36,14 @@ export default auth((req: NextAuthRequest) => {
     // 1. Protect all /my-dashboard/* and /admin/* routes
     if (isAdminRoute) {
         if (!isLoggedIn) {
-            const loginUrl = new URL("/login", nextUrl);
+            const loginUrl = new URL("/login", req.url);
             loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
             return addNoCacheHeaders(NextResponse.redirect(loginUrl));
         }
 
         if (userRole !== "admin") {
             // Authenticated but not admin → redirect to home
-            return addNoCacheHeaders(NextResponse.redirect(new URL("/", nextUrl)));
+            return addNoCacheHeaders(NextResponse.redirect(new URL("/", req.url)));
         }
 
         const response = NextResponse.next();
@@ -53,13 +53,14 @@ export default auth((req: NextAuthRequest) => {
     // 2. Redirect already-logged-in users away from auth pages
     if (isAuthRoute && isLoggedIn) {
         if (userRole === "admin") {
-            return addNoCacheHeaders(NextResponse.redirect(new URL("/my-dashboard", nextUrl)));
+            return addNoCacheHeaders(NextResponse.redirect(new URL("/my-dashboard", req.url)));
         }
-        return addNoCacheHeaders(NextResponse.redirect(new URL("/", nextUrl)));
+        return addNoCacheHeaders(NextResponse.redirect(new URL("/", req.url)));
     }
 
     return NextResponse.next();
 });
+
 
 export const config = {
     matcher: [
