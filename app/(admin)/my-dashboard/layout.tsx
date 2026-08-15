@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin/sidebar";
 import AdminHeader from "@/components/admin/Header";
+import { useSession } from "next-auth/react";
 
 export default function AdminDashboardLayout({
     children,
@@ -11,6 +12,26 @@ export default function AdminDashboardLayout({
 }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const { status } = useSession();
+
+    // 1. Prevent Browser Back-Forward Cache (BFCache) access after logout
+    useEffect(() => {
+        const handlePageShow = (event: PageTransitionEvent) => {
+            if (event.persisted) {
+                // Page was restored from BFCache (back button) -> force hard reload so middleware runs
+                window.location.reload();
+            }
+        };
+        window.addEventListener("pageshow", handlePageShow);
+        return () => window.removeEventListener("pageshow", handlePageShow);
+    }, []);
+
+    // 2. Client-side session guard fallback
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            window.location.href = "/login";
+        }
+    }, [status]);
 
     return (
         <div className="h-screen w-screen overflow-hidden bg-slate-50 text-slate-900 flex">

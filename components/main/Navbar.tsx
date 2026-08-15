@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -24,6 +25,14 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  const showAdminButton =
+    status === 'authenticated'
+      ? (session?.user as { role?: string } | undefined)?.role === 'admin'
+      : status === 'loading'
+        ? isAdmin
+        : false;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,7 +105,7 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
 
         {/* CTA Button */}
         <div className="hidden md:flex items-center gap-3">
-          {isAdmin && (
+          {showAdminButton && (
             <Link
               href="/my-dashboard"
               className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 text-xs tracking-widest uppercase font-sans font-bold transition-all duration-300 rounded-sm shadow-md border border-slate-700"
@@ -138,7 +147,7 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
               {link.label}
             </Link>
           ))}
-          {isAdmin && (
+          {showAdminButton && (
             <Link
               href="/my-dashboard"
               onClick={() => setMobileOpen(false)}
@@ -161,3 +170,4 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
 };
 
 export default Navbar;
+
