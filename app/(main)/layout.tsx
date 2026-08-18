@@ -3,6 +3,8 @@ import Navbar from '@/components/main/Navbar';
 import Footer from '@/components/main/Footer';
 import { getFooterData } from '@/lib/data/footerData';
 
+export const revalidate = 3600;
+
 export default async function MainLayout({
     children,
 }: {

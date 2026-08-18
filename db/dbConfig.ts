@@ -20,6 +20,11 @@ if (!cached) {
 }
 
 export const connectDB = async () => {
+  // If connection is already open and ready, return immediately
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -29,11 +34,10 @@ export const connectDB = async () => {
       dbName: "photography",
       bufferCommands: false,
       maxPoolSize: 10,
-      connectTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+      serverSelectionTimeoutMS: 3000,
     };
-
 
     if (!process.env.MONGO_URI) {
       throw new Error("MONGO_URI environment variable is not defined");
@@ -41,9 +45,9 @@ export const connectDB = async () => {
 
     cached.promise = mongoose
       .connect(process.env.MONGO_URI, opts)
-      .then((mongoose) => {
+      .then((mongooseInstance) => {
         console.log("MongoDB connected successfully!");
-        return mongoose.connection;
+        return mongooseInstance.connection;
       });
   }
 

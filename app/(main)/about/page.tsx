@@ -7,6 +7,8 @@ import WhyChooseUs from '@/components/main/about/WhyChooseUs';
 import { getAboutPageData } from '@/lib/data/aboutData';
 
 
+export const revalidate = 3600;
+
 export const metadata = {
     title: 'About Us | The Story Photography',
     description: 'Learn about The Story — a Dhaka-based wedding photography studio dedicated to capturing your love story with cinematic elegance.',

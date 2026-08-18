@@ -24,15 +24,18 @@ interface NavbarProps {
 const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", brandLogoText = "MTM", isAdmin = false }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const showAdminButton =
-    status === 'authenticated'
+    mounted && status === 'authenticated'
       ? (session?.user as { role?: string } | undefined)?.role === 'admin'
-      : status === 'loading'
-        ? isAdmin
-        : false;
+      : false;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,6 +48,7 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
 
   return (
     <header

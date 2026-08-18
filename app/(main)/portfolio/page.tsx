@@ -4,6 +4,8 @@ import PortfolioGallery from '@/components/main/portfolio/PortfolioGallery';
 import { getPortfolioAlbumsSummaryData } from '@/lib/data/portfolioData';
 import { getCategoryNames } from '@/lib/data/categoryData';
 
+export const revalidate = 3600;
+
 export const metadata = {
     title: 'Portfolio | The Story Photography',
     description: 'Browse our wedding, engagement, pre-wedding, and event photography portfolio.',

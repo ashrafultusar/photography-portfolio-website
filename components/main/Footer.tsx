@@ -166,10 +166,11 @@ const Footer = async () => {
 
       {/* Copyright */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-8 border-t border-slate-400/50 text-center text-xs font-sans text-slate-600 font-medium">
-        <p>
+        <p suppressHydrationWarning>
           &copy; {new Date().getFullYear()} {data.copyrightText}
         </p>
       </div>
+
     </footer>
   );
 };

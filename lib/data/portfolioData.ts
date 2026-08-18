@@ -59,40 +59,33 @@ export const getPortfolioAlbumsSummaryData = unstable_cache(
     { tags: ["portfolio"], revalidate: 3600 }
 );
 
-/**
- * GET All portfolio albums directly from MongoDB (full object data)
- */
-export const getPortfolioAlbumsData = unstable_cache(
-    async (): Promise<PortfolioAlbumData[]> => {
-        try {
-            await connectDB();
-            const albums: any[] = await Portfolio.find().sort({ createdAt: -1 }).lean();
+export async function getPortfolioAlbumsData(): Promise<PortfolioAlbumData[]> {
+    try {
+        await connectDB();
+        const albums: any[] = await Portfolio.find().sort({ createdAt: -1 }).lean();
 
-            if (albums && albums.length > 0) {
-                return albums.map((a: any) => ({
-                    id: a._id.toString(),
-                    slug: a.slug,
-                    title: a.title,
-                    category: a.category,
-                    clientName: a.clientName || "",
-                    eventDate: a.eventDate || "",
-                    location: a.location || "Dhaka, Bangladesh",
-                    coverImage: a.coverImage,
-                    description: a.description || "",
-                    featured: a.featured || false,
-                    photoCount: a.images?.length || 0,
-                    images: a.images || [],
-                }));
-            }
-        } catch (error) {
-            console.error("Error fetching portfolio albums from DB:", error);
+        if (albums && albums.length > 0) {
+            return albums.map((a: any) => ({
+                id: a._id.toString(),
+                slug: a.slug,
+                title: a.title,
+                category: a.category,
+                clientName: a.clientName || "",
+                eventDate: a.eventDate || "",
+                location: a.location || "Dhaka, Bangladesh",
+                coverImage: a.coverImage,
+                description: a.description || "",
+                featured: a.featured || false,
+                photoCount: a.images?.length || 0,
+                images: a.images || [],
+            }));
         }
+    } catch (error) {
+        console.error("Error fetching portfolio albums from DB:", error);
+    }
 
-        return formattedFallbackAlbums;
-    },
-    ["portfolio-full-cache"],
-    { tags: ["portfolio"], revalidate: 3600 }
-);
+    return formattedFallbackAlbums;
+}
 
 /**
  * Internal helper to fetch cached album metadata without heavy images array

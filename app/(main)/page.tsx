@@ -10,6 +10,8 @@ import { getPackagesPageData } from '@/lib/data/packagesData';
 import { getAboutPageData } from '@/lib/data/aboutData';
 
 
+export const revalidate = 3600;
+
 export default async function HomePage() {
     const [heroData, portfolioAlbums, packagesData, aboutData] = await Promise.all([
         getHeroData(),

@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { getAlbumBySlugData, getPortfolioAlbumsSummaryData } from '@/lib/data/portfolioData';
 import PortfolioDetail from '@/components/main/portfolio/PortfolioDetail';
 
+export const revalidate = 3600;
+
 // Pre-generate routes dynamically from DB summary data
 export async function generateStaticParams() {
     const albums = await getPortfolioAlbumsSummaryData();
