@@ -2,9 +2,6 @@ import React from 'react';
 import PackagePage from '@/components/main/package/PackagePage';
 import { getPackagesPageData } from '@/lib/data/packagesData';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 export const metadata = {
     title: 'Packages & Pricing | The Story Photography',
     description: 'Explore transparent wedding photography packages — Silver, Gold, and Platinum — crafted for every couple\'s dream day in Dhaka, Bangladesh.',
@@ -15,3 +12,4 @@ export default async function PackagesRoute() {
 
     return <PackagePage data={data} />;
 }
+

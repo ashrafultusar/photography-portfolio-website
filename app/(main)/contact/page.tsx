@@ -5,9 +5,8 @@ import QuickContact from "@/components/main/contact/QuickContact";
 import WhatsAppCTA from "@/components/main/contact/WhatsAppCTA";
 import { getContactPageData } from "@/lib/data/contactData";
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata() {
+
   const data = await getContactPageData();
   return {
     title: `${data.heroHeading} | The Story Photography`,

@@ -29,7 +29,11 @@ export const connectDB = async () => {
       dbName: "photography",
       bufferCommands: false,
       maxPoolSize: 10,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 5000,
     };
+
 
     if (!process.env.MONGO_URI) {
       throw new Error("MONGO_URI environment variable is not defined");
