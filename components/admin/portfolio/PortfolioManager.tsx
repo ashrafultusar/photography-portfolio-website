@@ -173,7 +173,7 @@ export default function PortfolioManager({
     setIsModalOpen(true);
   };
 
-  // Upload Single Cover Image to Cloudinary directly
+  // Upload Single Cover Image to Cloudinary directly from client
   const handleCoverImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -181,24 +181,22 @@ export default function PortfolioManager({
     if (!files || files.length === 0) return;
 
     setIsUploadingCover(true);
-    setStatusMessage("Uploading cover photo to Cloudinary...");
+    setStatusMessage("Compressing & uploading cover photo to Cloudinary...");
 
-    const fd = new FormData();
-    fd.append("file", files[0]);
-
-    const res = await uploadToCloudinary(fd);
+    const { uploadImagesDirectToCloudinary } = await import("@/lib/uploadClient");
+    const res = await uploadImagesDirectToCloudinary([files[0]]);
 
     setIsUploadingCover(false);
 
     if (res.success && res.urls && res.urls.length > 0) {
-      setFormData((prev) => ({ ...prev, coverImage: res.urls![0] }));
+      setFormData((prev) => ({ ...prev, coverImage: res.urls[0] }));
       setStatusMessage("Cover photo uploaded successfully!");
     } else {
-      setStatusMessage(res.error || "Failed to upload cover photo.");
+      setStatusMessage(res.errors[0] || "Failed to upload cover photo.");
     }
   };
 
-  // Upload Multiple Gallery Images in Batches of 5 (Supports 30-40+ photos / 60MB+ total size)
+  // Upload Multiple Gallery Images in Parallel Batches directly from Client
   const handleMultipleGalleryUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -207,55 +205,37 @@ export default function PortfolioManager({
 
     const fileList = Array.from(files);
     const totalFiles = fileList.length;
-    const BATCH_SIZE = 5;
 
     setIsUploadingGallery(true);
-    setStatusMessage(`Preparing to upload ${totalFiles} images...`);
+    setStatusMessage(`Compressing & Uploading ${totalFiles} gallery photos...`);
 
-    const allUploadedUrls: string[] = [];
-
-    for (let i = 0; i < totalFiles; i += BATCH_SIZE) {
-      const batch = fileList.slice(i, i + BATCH_SIZE);
-      const currentBatchNum = Math.floor(i / BATCH_SIZE) + 1;
-      const totalBatches = Math.ceil(totalFiles / BATCH_SIZE);
-
-      setStatusMessage(
-        `Uploading batch ${currentBatchNum} of ${totalBatches} (${batch.length} photos)...`
-      );
-
-      const fd = new FormData();
-      batch.forEach((file) => fd.append("files", file));
-
-      const res = await uploadToCloudinary(fd);
-
-      if (res.success && res.urls && res.urls.length > 0) {
-        allUploadedUrls.push(...res.urls);
-      } else {
-        console.error(`Batch ${currentBatchNum} upload error:`, res.error);
-      }
-    }
+    const { uploadImagesDirectToCloudinary } = await import("@/lib/uploadClient");
+    const res = await uploadImagesDirectToCloudinary(fileList, (completed, total) => {
+      setStatusMessage(`Uploaded ${completed}/${total} photos to Cloudinary...`);
+    });
 
     setIsUploadingGallery(false);
 
-    if (allUploadedUrls.length > 0) {
-      const newImages = allUploadedUrls.map((url, idx) => ({
+    if (res.success && res.urls.length > 0) {
+      const newImages = res.urls.map((url, idx) => ({
         src: url,
-        alt: `${formData.title || "Portfolio photo"} ${idx + 1}`,
+        alt: `${formData.title || "Portfolio photo"} ${formData.images.length + idx + 1}`,
       }));
 
       setFormData((prev) => ({
         ...prev,
         images: [...prev.images, ...newImages],
-        coverImage: prev.coverImage || allUploadedUrls[0], // Auto-assign 1st photo as cover if not set
+        coverImage: prev.coverImage || res.urls[0], // Auto-assign 1st photo as cover if not set
       }));
 
       setStatusMessage(
-        `Successfully uploaded ${allUploadedUrls.length} of ${totalFiles} gallery photos!`
+        `Successfully uploaded ${res.urls.length} of ${totalFiles} gallery photos!`
       );
     } else {
       setStatusMessage("Failed to upload gallery images. Please try again.");
     }
   };
+
 
   const handleRemoveGalleryImage = (index: number) => {
     setFormData((prev) => ({
@@ -377,11 +357,10 @@ export default function PortfolioManager({
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat
+              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === cat
                   ? "bg-slate-900 text-white shadow-sm"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -863,7 +842,7 @@ export default function PortfolioManager({
                 />
               </div>
 
-              
+
 
               {/* Form Buttons */}
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
@@ -884,8 +863,8 @@ export default function PortfolioManager({
                   {isSubmitting
                     ? "Creating Album..."
                     : editingAlbum
-                    ? "Save Changes"
-                    : "Create Portfolio Album"}
+                      ? "Save Changes"
+                      : "Create Portfolio Album"}
                 </button>
               </div>
             </form>

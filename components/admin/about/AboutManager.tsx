@@ -100,14 +100,13 @@ export default function AboutManager() {
         if (!file) return;
         setUploading(true);
         try {
-            const fd = new FormData();
-            fd.append("file", file);
-            const res = await uploadToCloudinary(fd);
+            const { uploadImagesDirectToCloudinary } = await import("@/lib/uploadClient");
+            const res = await uploadImagesDirectToCloudinary([file]);
             if (res.success && res.urls && res.urls.length > 0) {
                 onSuccess(res.urls[0]);
                 showToast("Image uploaded successfully!", true);
             } else {
-                showToast(res.error || "Failed to upload image.", false);
+                showToast(res.errors[0] || "Failed to upload image.", false);
             }
         } catch (err: any) {
             console.error(err);
@@ -116,6 +115,7 @@ export default function AboutManager() {
             setUploading(false);
         }
     };
+
 
     // home stat helpers
     const openAddHomeStat = () => { setHomeStatForm({ icon: "camera", value: "", label: "" }); setHomeStatModal({ open: true, idx: null }); };

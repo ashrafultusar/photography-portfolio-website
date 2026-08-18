@@ -59,18 +59,16 @@ export default function FooterManager() {
         loadFooter();
     }, []);
 
-    // Direct Logo File Upload to Cloudinary
+    // Direct Logo File Upload to Cloudinary from client
     const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
         setIsUploadingLogo(true);
-        setStatusMsg("Uploading new logo image to Cloudinary...");
+        setStatusMsg("Compressing & uploading new logo image to Cloudinary...");
 
-        const fd = new FormData();
-        fd.append("files", files[0]);
-
-        const res = await uploadToCloudinary(fd);
+        const { uploadImagesDirectToCloudinary } = await import("@/lib/uploadClient");
+        const res = await uploadImagesDirectToCloudinary([files[0]]);
 
         setIsUploadingLogo(false);
 
@@ -82,9 +80,10 @@ export default function FooterManager() {
             }));
             setStatusMsg("Logo uploaded successfully! Click Save to apply changes.");
         } else {
-            setStatusMsg("Failed to upload logo image.");
+            setStatusMsg(res.errors[0] || "Failed to upload logo image.");
         }
     };
+
 
     // Quick Link Handlers
     const handleAddQuickLink = (e: React.FormEvent) => {

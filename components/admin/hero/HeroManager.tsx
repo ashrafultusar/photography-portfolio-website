@@ -41,34 +41,24 @@ export default function HeroManager() {
         loadHero();
     }, []);
 
-    // Upload Slider Images directly to Cloudinary
+    // Upload Slider Images directly to Cloudinary from client
     const handleSliderImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
         setIsUploading(true);
-        setStatusMsg(`Uploading ${files.length} slider image(s) to Cloudinary...`);
-
         const fileList = Array.from(files);
-        const BATCH_SIZE = 5;
-        const allUploadedUrls: string[] = [];
+        setStatusMsg(`Compressing & Uploading ${fileList.length} slider image(s)...`);
 
-        for (let i = 0; i < fileList.length; i += BATCH_SIZE) {
-            const batch = fileList.slice(i, i + BATCH_SIZE);
-            const fd = new FormData();
-            batch.forEach((file) => fd.append("files", file));
-
-            const res = await uploadToCloudinary(fd);
-
-            if (res.success && res.urls && res.urls.length > 0) {
-                allUploadedUrls.push(...res.urls);
-            }
-        }
+        const { uploadImagesDirectToCloudinary } = await import("@/lib/uploadClient");
+        const res = await uploadImagesDirectToCloudinary(fileList, (completed, total) => {
+            setStatusMsg(`Uploaded ${completed}/${total} images...`);
+        });
 
         setIsUploading(false);
 
-        if (allUploadedUrls.length > 0) {
-            const newImages = allUploadedUrls.map((url, idx) => ({
+        if (res.success && res.urls.length > 0) {
+            const newImages = res.urls.map((url, idx) => ({
                 src: url,
                 alt: `${formData.title || "Hero Slider"} Image ${formData.images.length + idx + 1}`,
             }));
@@ -78,11 +68,12 @@ export default function HeroManager() {
                 images: [...prev.images, ...newImages],
             }));
 
-            setStatusMsg(`Successfully added ${allUploadedUrls.length} slider image(s)!`);
+            setStatusMsg(`Successfully uploaded ${res.urls.length} slider image(s)!`);
         } else {
             setStatusMsg("Failed to upload slider image(s).");
         }
     };
+
 
     // Add Image via Direct URL
     const handleAddDirectUrl = (e: React.FormEvent) => {
