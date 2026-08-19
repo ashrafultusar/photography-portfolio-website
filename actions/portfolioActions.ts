@@ -3,6 +3,7 @@
 import { connectDB } from "@/db/dbConfig";
 import Portfolio, { IPortfolioAlbum } from "@/models/Portfolio";
 import { revalidatePath, revalidateTag } from "next/cache";
+import crypto from "crypto";
 
 export interface AlbumInputData {
     title: string;
@@ -34,7 +35,9 @@ export async function uploadToCloudinary(formData: FormData): Promise<{ success:
             return { success: false, error: "No files provided for upload." };
         }
 
-        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "jhofobjt";
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET;
         const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "photography_portfolio";
 
         const uploadedUrls: string[] = [];
@@ -45,28 +48,46 @@ export async function uploadToCloudinary(formData: FormData): Promise<{ success:
             const base64Image = `data:${file.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
 
             if (cloudName) {
-                // Upload to Cloudinary API
                 const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+                let res: Response;
 
-                const bodyData = new URLSearchParams();
-                bodyData.append("file", base64Image);
-                bodyData.append("upload_preset", uploadPreset);
+                if (apiKey && apiSecret) {
+                    // Signed Cloudinary upload using API Key & API Secret
+                    const timestamp = Math.floor(Date.now() / 1000).toString();
+                    const strToSign = `timestamp=${timestamp}${apiSecret}`;
+                    const signature = crypto.createHash("sha1").update(strToSign).digest("hex");
 
-                const res = await fetch(cloudinaryUrl, {
-                    method: "POST",
-                    body: bodyData,
-                });
+                    const bodyData = new URLSearchParams();
+                    bodyData.append("file", base64Image);
+                    bodyData.append("api_key", apiKey);
+                    bodyData.append("timestamp", timestamp);
+                    bodyData.append("signature", signature);
+
+                    res = await fetch(cloudinaryUrl, {
+                        method: "POST",
+                        body: bodyData,
+                    });
+                } else {
+                    // Unsigned preset fallback
+                    const bodyData = new URLSearchParams();
+                    bodyData.append("file", base64Image);
+                    bodyData.append("upload_preset", uploadPreset);
+
+                    res = await fetch(cloudinaryUrl, {
+                        method: "POST",
+                        body: bodyData,
+                    });
+                }
 
                 if (res.ok) {
                     const data = await res.json();
                     uploadedUrls.push(data.secure_url);
                 } else {
-                    // If unsigned preset fails, fallback to returning data URL or error log
-                    console.warn("Cloudinary upload API returned non-OK status. Falling back to data URL.");
+                    const errJson = await res.json().catch(() => ({}));
+                    console.warn("Cloudinary upload API status non-OK:", errJson);
                     uploadedUrls.push(base64Image);
                 }
             } else {
-                // Fallback when Cloudinary environment variables are not set
                 uploadedUrls.push(base64Image);
             }
         }

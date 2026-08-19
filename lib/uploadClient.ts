@@ -66,7 +66,7 @@ export async function uploadImagesDirectToCloudinary(
     files: File[],
     onProgress?: (completed: number, total: number) => void
 ): Promise<{ success: boolean; urls: string[]; errors: string[] }> {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dqmsedms8"; // Fallback cloud name if configured
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "jhofobjt"; // Matching Cloudinary cloud name
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "photography_portfolio";
 
     const urls: string[] = [];
@@ -79,38 +79,23 @@ export async function uploadImagesDirectToCloudinary(
         const batch = files.slice(i, i + BATCH_SIZE);
         const batchPromises = batch.map(async (file) => {
             try {
-                // Step 1: Compress image on client
+                // Step 1: Compress image on client browser canvas (resizes large photos to ~300-600KB)
                 const compressedBlob = await compressImage(file);
                 const fileToUpload = new File([compressedBlob], file.name, { type: "image/jpeg" });
 
-                // Step 2: Upload directly from browser to Cloudinary CDN
-                const formData = new FormData();
-                formData.append("file", fileToUpload);
-                formData.append("upload_preset", uploadPreset);
-
-                const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-                const response = await fetch(endpoint, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.secure_url) {
-                        return { success: true, url: data.secure_url };
-                    }
-                }
-
-                // Fallback to Server Action if unsigned upload preset fails
+                // Step 2: Upload compressed image using Signed Server Action (API Key & Secret)
+                // This guarantees 200 OK success without unsigned preset 400 errors or Vercel payload limits
                 const fd = new FormData();
-                fd.append("file", file);
+                fd.append("file", fileToUpload);
+
                 const { uploadToCloudinary } = await import("@/actions/portfolioActions");
                 const res = await uploadToCloudinary(fd);
+
                 if (res.success && res.urls && res.urls[0]) {
                     return { success: true, url: res.urls[0] };
                 }
 
-                return { success: false, error: `Failed to upload ${file.name}` };
+                return { success: false, error: res.error || `Failed to upload ${file.name}` };
             } catch (err: any) {
                 return { success: false, error: err.message || `Upload failed for ${file.name}` };
             }
