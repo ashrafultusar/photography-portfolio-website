@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
+    getHeroContentAction,
     updateHeroTextAction,
     addHeroSlideAction,
     updateHeroSlideAction,
     deleteHeroSlideAction,
     reorderHeroSlidesAction,
+    addMultipleHeroSlidesAction,
 } from "@/actions/heroActions";
 import { HeroImageData, HeroSectionData } from "@/lib/types/hero";
 
@@ -15,6 +17,7 @@ interface HeroManagerProps {
 }
 
 export default function HeroManager({ initialData }: HeroManagerProps) {
+    const [loading, setLoading] = useState(!initialData);
     const [textData, setTextData] = useState({
         subtitle: initialData?.subtitle || "WEDDING & EVENT PHOTOGRAPHY",
         title: initialData?.title || "The Story",
@@ -30,6 +33,32 @@ export default function HeroManager({ initialData }: HeroManagerProps) {
     const [savingItemIdx, setSavingItemIdx] = useState<number | null>(null);
     const [statusMsg, setStatusMsg] = useState<string | null>(null);
     const [activePreviewIdx, setActivePreviewIdx] = useState(0);
+
+    useEffect(() => {
+        if (initialData) {
+            setLoading(false);
+            return;
+        }
+        getHeroContentAction().then((d) => {
+            if (d) {
+                setTextData({
+                    subtitle: d.subtitle || "WEDDING & EVENT PHOTOGRAPHY",
+                    title: d.title || "The Story",
+                    description: d.description || "Capturing your eternal moments with cinematic elegance.",
+                    buttonText: d.buttonText || "Book Us",
+                    buttonLink: d.buttonLink || "#book-us",
+                });
+                setImages(d.images || []);
+            }
+            setLoading(false);
+        });
+    }, [initialData]);
+
+    if (loading) return (
+        <div className="flex items-center justify-center h-48">
+            <div className="w-6 h-6 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+        </div>
+    );
 
     // Save Hero Text Overlay Content
     const handleSaveHeroText = async (e?: React.FormEvent) => {
@@ -57,7 +86,6 @@ export default function HeroManager({ initialData }: HeroManagerProps) {
         setStatusMsg(`Uploading ${fileList.length} image(s) directly to Cloudinary...`);
 
         const { uploadImagesDirectToCloudinary } = await import("@/lib/uploadClient");
-        const { addMultipleHeroSlidesAction } = await import("@/actions/heroActions");
 
         // Step 1: Direct Browser -> Cloudinary REST API upload in parallel (Bypasses Vercel Serverless latency)
         const uploadRes = await uploadImagesDirectToCloudinary(fileList, (completed, total) => {

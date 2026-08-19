@@ -160,9 +160,9 @@ export async function createPortfolioAlbum(data: AlbumInputData) {
 export async function getPortfolioAlbums() {
     try {
         await connectDB();
-        // Exclude heavy `images` array from list view to keep initial load instantaneous (< 100ms)
+        // Include `images` for photoCount computation while keeping payload lightweight
         const albums = await Portfolio.find()
-            .select("title slug category clientName eventDate location coverImage description featured")
+            .select("title slug category clientName eventDate location coverImage description featured images")
             .sort({ createdAt: -1 })
             .lean();
 
@@ -177,10 +177,10 @@ export async function getPortfolioAlbums() {
                 eventDate: a.eventDate || "",
                 location: a.location || "",
                 coverImage: a.coverImage || "",
-                photoCount: 0,
+                photoCount: a.images?.length || 0,
                 description: a.description || "",
                 featured: a.featured || false,
-                images: [],
+                images: a.images || [],
             })),
         };
     } catch (error: any) {

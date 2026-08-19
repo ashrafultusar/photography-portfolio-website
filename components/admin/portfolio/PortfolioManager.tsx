@@ -34,15 +34,18 @@ export interface PortfolioAlbumUI {
 interface PortfolioManagerProps {
   initialAlbums?: PortfolioAlbumUI[];
   initialCategories?: string[];
+  initialDbCategories?: CategoryData[];
 }
 
 export default function PortfolioManager({
   initialAlbums = [],
   initialCategories = ["All"],
+  initialDbCategories = [],
 }: PortfolioManagerProps) {
+  const [loading, setLoading] = useState(!initialAlbums.length);
   const [albums, setAlbums] = useState<PortfolioAlbumUI[]>(initialAlbums);
   const [categories, setCategories] = useState<string[]>(initialCategories);
-  const [dbCategories, setDbCategories] = useState<CategoryData[]>([]);
+  const [dbCategories, setDbCategories] = useState<CategoryData[]>(initialDbCategories);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -74,26 +77,39 @@ export default function PortfolioManager({
     images: [] as { src: string; alt: string }[],
   });
 
-  // Fetch albums and categories via server actions on mount — only if no initial data from server
+  // Fetch albums and categories via server actions on mount
   useEffect(() => {
-    if (initialAlbums.length > 0 && initialCategories.length > 1) return;
-
     async function loadData() {
-      // Load Albums via Server Action
-      const albumRes = await getPortfolioAlbums();
+      const [albumRes, dbCatRes] = await Promise.all([
+        getPortfolioAlbums(),
+        getCategoriesAction(),
+      ]);
+
       if (albumRes.success && albumRes.albums) {
         setAlbums(albumRes.albums);
       }
 
-      // Load Categories via Server Action
-      const dbCatRes = await getCategoriesAction();
       if (dbCatRes.success && dbCatRes.categories) {
         setDbCategories(dbCatRes.categories);
         setCategories(["All", ...dbCatRes.categories.map((c) => c.name)]);
       }
+
+      setLoading(false);
     }
+
+    if (initialAlbums.length > 0) {
+      setLoading(false);
+      return;
+    }
+
     loadData();
-  }, []);
+  }, [initialAlbums]);
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-48">
+      <div className="w-6 h-6 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+    </div>
+  );
 
   const refreshCategories = async () => {
     const dbCatRes = await getCategoriesAction();

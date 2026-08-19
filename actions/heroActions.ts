@@ -36,8 +36,8 @@ const revalidateHeroCache = () => {
  */
 export async function getHeroContentAction() {
     try {
-        const { getAdminHeroData } = await import("@/lib/data/heroData");
-        return await getAdminHeroData();
+        const { getHeroData } = await import("@/lib/data/heroData");
+        return await getHeroData();
     } catch (error) {
         console.error("Error in getHeroContentAction:", error);
         return {
