@@ -45,7 +45,6 @@ const portfolioAlbumSchema = new Schema<IPortfolioAlbum>(
         category: {
             type: String,
             required: [true, "Category is required"],
-            default: "Wedding",
         },
         clientName: {
             type: String,

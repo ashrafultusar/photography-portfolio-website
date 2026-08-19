@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 export interface AlbumInputData {
     title: string;
-    category: "Wedding" | "Holud" | "Nikah" | "Reception" | "Pre-Wedding" | "Engagement" | "Portrait" | "Event" | "Commercial";
+    category: string;
     clientName: string;
     eventDate: string;
     location: string;
@@ -190,6 +190,64 @@ export async function getPortfolioAlbums() {
             albums: [],
             error: error.message,
         };
+    }
+}
+
+export async function updatePortfolioAlbum(id: string, data: AlbumInputData) {
+    try {
+        await connectDB();
+        const updated = await Portfolio.findByIdAndUpdate(
+            id,
+            {
+                title: data.title,
+                category: data.category,
+                clientName: data.clientName,
+                eventDate: data.eventDate,
+                location: data.location,
+                description: data.description,
+                coverImage: data.coverImage,
+                images: data.images,
+                featured: data.featured,
+            },
+            { new: true }
+        );
+
+        (revalidateTag as any)("portfolio");
+        revalidatePath("/portfolio");
+        revalidatePath("/");
+        revalidatePath("/my-dashboard/portfolio");
+
+        return {
+            success: true,
+            message: "Portfolio album updated successfully!",
+            album: updated ? { ...updated.toObject(), _id: updated._id.toString() } : null,
+        };
+    } catch (error: any) {
+        console.error("Update portfolio album error:", error);
+        return {
+            success: false,
+            message: error.message || "Failed to update portfolio album.",
+        };
+    }
+}
+
+export async function getPortfolioAlbumByIdAction(id: string) {
+    try {
+        await connectDB();
+        const album = await Portfolio.findById(id).lean();
+        if (!album) return { success: false, message: "Album not found" };
+
+        return {
+            success: true,
+            album: {
+                ...album,
+                _id: (album as any)._id?.toString(),
+                images: (album as any).images || [],
+            },
+        };
+    } catch (error: any) {
+        console.error("Get portfolio album by ID error:", error);
+        return { success: false, message: error.message || "Failed to fetch album details." };
     }
 }
 

@@ -53,3 +53,37 @@ export const getHeroData = unstable_cache(
     ["hero-data-cache"],
     { tags: ["hero"], revalidate: 3600 }
 );
+
+/**
+ * GET uncached Hero section content directly from MongoDB for Admin Dashboard (instant loading & real-time accuracy)
+ */
+export async function getAdminHeroData(): Promise<HeroSectionData> {
+    try {
+        await connectDB();
+        const hero: any = await Hero.findOne()
+            .select("subtitle title description buttonText buttonLink images")
+            .lean();
+
+        if (hero) {
+            return {
+                subtitle: hero.subtitle || FALLBACK_HERO.subtitle,
+                title: hero.title || FALLBACK_HERO.title,
+                description: hero.description || FALLBACK_HERO.description,
+                buttonText: hero.buttonText || FALLBACK_HERO.buttonText,
+                buttonLink: hero.buttonLink || FALLBACK_HERO.buttonLink,
+                images:
+                    hero.images && hero.images.length > 0
+                        ? hero.images.map((img: any) => ({
+                            src: img.src,
+                            alt: img.alt || "Photography Hero Slider Image",
+                        }))
+                        : FALLBACK_HERO.images,
+            };
+        }
+    } catch (error) {
+        console.error("Error fetching Admin Hero section data:", error);
+    }
+
+    return FALLBACK_HERO;
+}
+

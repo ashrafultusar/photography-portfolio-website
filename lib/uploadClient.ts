@@ -1,10 +1,12 @@
+import { getCloudinarySignatureAction } from "@/actions/cloudinaryActions";
+
 /**
  * Compress an image File in the browser using HTML5 Canvas
- * Resizes large photos to a max dimension while maintaining aspect ratio and quality
+ * Resizes large photos to max dimension (e.g. 2000px) while preserving quality
  */
-export async function compressImage(file: File, maxWidth = 2500, quality = 0.85): Promise<Blob> {
+export async function compressImage(file: File, maxWidth = 2000, quality = 0.82): Promise<Blob> {
     if (!file.type.startsWith("image/") || file.type === "image/gif" || file.type === "image/svg+xml") {
-        return file; // Return original if not static image
+        return file;
     }
 
     return new Promise((resolve) => {
@@ -41,7 +43,7 @@ export async function compressImage(file: File, maxWidth = 2500, quality = 0.85)
                     if (blob && blob.size < file.size) {
                         resolve(blob);
                     } else {
-                        resolve(file); // Return original if compression didn't reduce size
+                        resolve(file);
                     }
                 },
                 "image/jpeg",
@@ -59,62 +61,75 @@ export async function compressImage(file: File, maxWidth = 2500, quality = 0.85)
 }
 
 /**
- * Direct Client-Side Upload to Cloudinary API with parallel batch processing
- * Bypasses Next.js / Vercel 4.5MB Server Action payload limit completely!
+ * Direct Client-to-Cloudinary Parallel REST Upload
+ * Direct browser HTTP POST -> Cloudinary CDN (Bypasses Vercel serverless 4.5MB limit & cold-starts)
  */
 export async function uploadImagesDirectToCloudinary(
     files: File[],
     onProgress?: (completed: number, total: number) => void
 ): Promise<{ success: boolean; urls: string[]; errors: string[] }> {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "jhofobjt"; // Matching Cloudinary cloud name
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "photography_portfolio";
+    if (!files || files.length === 0) {
+        return { success: false, urls: [], errors: ["No files provided"] };
+    }
 
     const urls: string[] = [];
     const errors: string[] = [];
     let completedCount = 0;
 
-    // Parallel upload batching (3 files at a time)
-    const BATCH_SIZE = 4;
-    for (let i = 0; i < files.length; i += BATCH_SIZE) {
-        const batch = files.slice(i, i + BATCH_SIZE);
-        const batchPromises = batch.map(async (file) => {
-            try {
-                // Step 1: Compress image on client browser canvas (resizes large photos to ~300-600KB)
-                const compressedBlob = await compressImage(file);
-                const fileToUpload = new File([compressedBlob], file.name, { type: "image/jpeg" });
+    // Step 1: Obtain signature or upload preset configuration once (<30ms server call)
+    const sigConfig = await getCloudinarySignatureAction();
+    const cloudName = sigConfig.cloudName || "jhofobjt";
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-                // Step 2: Upload compressed image using Signed Server Action (API Key & Secret)
-                // This guarantees 200 OK success without unsigned preset 400 errors or Vercel payload limits
-                const fd = new FormData();
-                fd.append("file", fileToUpload);
+    // Step 2: Upload all files simultaneously in parallel directly from browser to Cloudinary
+    const uploadPromises = files.map(async (file) => {
+        try {
+            // Compress on browser canvas (~50ms)
+            const compressedBlob = await compressImage(file, 2000, 0.82);
+            const formData = new FormData();
+            formData.append("file", compressedBlob, file.name || "photo.jpg");
 
-                const { uploadToCloudinary } = await import("@/actions/portfolioActions");
-                const res = await uploadToCloudinary(fd);
-
-                if (res.success && res.urls && res.urls[0]) {
-                    return { success: true, url: res.urls[0] };
-                }
-
-                return { success: false, error: res.error || `Failed to upload ${file.name}` };
-            } catch (err: any) {
-                return { success: false, error: err.message || `Upload failed for ${file.name}` };
+            if (sigConfig.signed && sigConfig.apiKey && sigConfig.timestamp && sigConfig.signature) {
+                formData.append("api_key", sigConfig.apiKey);
+                formData.append("timestamp", sigConfig.timestamp);
+                formData.append("signature", sigConfig.signature);
+            } else {
+                formData.append("upload_preset", sigConfig.uploadPreset || "photography_portfolio");
             }
-        });
 
-        const results = await Promise.all(batchPromises);
-        results.forEach((res) => {
+            // Direct fetch directly to Cloudinary API
+            const res = await fetch(cloudinaryUrl, {
+                method: "POST",
+                body: formData,
+            });
+
             completedCount++;
-            if (res.success && res.url) {
-                urls.push(res.url);
-            } else if (res.error) {
-                errors.push(res.error);
+            if (onProgress) {
+                onProgress(completedCount, files.length);
             }
-        });
 
-        if (onProgress) {
-            onProgress(completedCount, files.length);
+            if (res.ok) {
+                const data = await res.json();
+                return { success: true, url: data.secure_url };
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                console.warn("Direct Cloudinary upload error response:", errData);
+                return { success: false, error: errData?.error?.message || `Upload failed for ${file.name}` };
+            }
+        } catch (err: any) {
+            console.error("Direct Cloudinary fetch network error:", err);
+            return { success: false, error: err.message || `Network error for ${file.name}` };
         }
-    }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    results.forEach((res) => {
+        if (res.success && res.url) {
+            urls.push(res.url);
+        } else if (res.error) {
+            errors.push(res.error);
+        }
+    });
 
     return {
         success: urls.length > 0,

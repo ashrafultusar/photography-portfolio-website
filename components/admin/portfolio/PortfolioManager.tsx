@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   createPortfolioAlbum,
+  updatePortfolioAlbum,
   deletePortfolioAlbum,
   getPortfolioAlbums,
-  uploadToCloudinary,
+  getPortfolioAlbumByIdAction,
 } from "@/actions/portfolioActions";
 import {
   createCategory,
@@ -63,7 +64,7 @@ export default function PortfolioManager({
 
   const [formData, setFormData] = useState({
     title: "",
-    category: "Wedding",
+    category: "",
     clientName: "",
     eventDate: "",
     location: "Dhaka, Bangladesh",
@@ -143,7 +144,7 @@ export default function PortfolioManager({
     setEditingAlbum(null);
     setFormData({
       title: "",
-      category: categories[1] || "Wedding",
+      category: categories[1] || "",
       clientName: "",
       eventDate: new Date().toISOString().split("T")[0],
       location: "Dhaka, Bangladesh",
@@ -156,7 +157,7 @@ export default function PortfolioManager({
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (album: PortfolioAlbumUI) => {
+  const handleOpenEdit = async (album: PortfolioAlbumUI) => {
     setEditingAlbum(album);
     setFormData({
       title: album.title,
@@ -171,6 +172,16 @@ export default function PortfolioManager({
     });
     setStatusMessage(null);
     setIsModalOpen(true);
+
+    if (album.id && album.id.length > 10) {
+      const res = await getPortfolioAlbumByIdAction(album.id);
+      if (res.success && res.album && res.album.images) {
+        setFormData((prev) => ({
+          ...prev,
+          images: res.album.images,
+        }));
+      }
+    }
   };
 
   // Upload Single Cover Image to Cloudinary directly from client
@@ -246,15 +257,20 @@ export default function PortfolioManager({
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this album?")) {
+      setAlbums((prev) => prev.filter((a) => a.id !== id));
       if (id.length > 10) {
         await deletePortfolioAlbum(id);
       }
-      setAlbums((prev) => prev.filter((a) => a.id !== id));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.category) {
+      alert("Please select or create a category first via 'Manage Categories'.");
+      return;
+    }
 
     if (!formData.coverImage) {
       alert("Please upload or enter a cover image URL.");
@@ -264,16 +280,24 @@ export default function PortfolioManager({
     setIsSubmitting(true);
     setStatusMessage("Saving portfolio album...");
 
-    const res = await createPortfolioAlbum({
-      ...formData,
-      category: formData.category as any,
-    });
+    let res;
+    if (editingAlbum && editingAlbum.id && editingAlbum.id.length > 10) {
+      res = await updatePortfolioAlbum(editingAlbum.id, {
+        ...formData,
+        category: formData.category,
+      });
+    } else {
+      res = await createPortfolioAlbum({
+        ...formData,
+        category: formData.category,
+      });
+    }
 
     setIsSubmitting(false);
 
     if (res.success && res.album) {
-      const createdAlbum: PortfolioAlbumUI = {
-        id: res.album._id?.toString() || Date.now().toString(),
+      const savedAlbum: PortfolioAlbumUI = {
+        id: res.album._id || Date.now().toString(),
         slug: res.album.slug,
         title: res.album.title,
         category: res.album.category,
@@ -281,26 +305,22 @@ export default function PortfolioManager({
         eventDate: res.album.eventDate,
         location: res.album.location,
         coverImage: res.album.coverImage,
-        photoCount: res.album.images?.length || 0,
+        photoCount: res.album.images?.length || formData.images.length || 0,
         description: res.album.description,
         featured: res.album.featured,
-        images: res.album.images,
+        images: res.album.images || formData.images,
       };
 
-      setAlbums([
-        createdAlbum,
-        ...albums.filter((a) => a.id !== createdAlbum.id),
-      ]);
+      if (editingAlbum) {
+        setAlbums((prev) =>
+          prev.map((a) => (a.id === savedAlbum.id ? savedAlbum : a))
+        );
+      } else {
+        setAlbums([savedAlbum, ...albums]);
+      }
       setIsModalOpen(false);
     } else {
-      const newAlbum: PortfolioAlbumUI = {
-        id: Date.now().toString(),
-        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        photoCount: formData.images.length || 1,
-        ...formData,
-      };
-      setAlbums([newAlbum, ...albums]);
-      setIsModalOpen(false);
+      setStatusMessage(res.message || "Failed to save portfolio album.");
     }
   };
 
@@ -358,8 +378,8 @@ export default function PortfolioManager({
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === cat
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                ? "bg-slate-900 text-white shadow-sm"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
             >
               {cat}
@@ -536,37 +556,26 @@ export default function PortfolioManager({
             {/* Existing Categories List */}
             <div className="mt-6">
               <h3 className="text-xs font-semibold text-slate-700 mb-2">
-                Available Categories ({categories.length - 1})
+                Available Categories ({dbCategories.length})
               </h3>
               <div className="max-h-60 overflow-y-auto space-y-2 p-1">
-                {categories
-                  .filter((c) => c !== "All")
-                  .map((catName) => {
-                    const dbCat = dbCategories.find((d) => d.name === catName);
-                    return (
-                      <div
-                        key={catName}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-800"
-                      >
-                        <span className="font-semibold">{catName}</span>
-                        {dbCat ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteCategoryClick(dbCat.id, dbCat.name)
-                            }
-                            className="text-red-500 hover:text-red-700 font-medium text-[11px] px-2 py-1 rounded hover:bg-red-50"
-                          >
-                            Delete
-                          </button>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 bg-slate-200 px-2 py-0.5 rounded-full font-mono">
-                            Default
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+                {dbCategories.map((dbCat) => (
+                  <div
+                    key={dbCat.id}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-800"
+                  >
+                    <span className="font-semibold">{dbCat.name}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDeleteCategoryClick(dbCat.id, dbCat.name)
+                      }
+                      className="text-red-500 hover:text-red-700 font-medium text-[11px] px-2 py-1 rounded hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 
