@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from '@/components/main/Navbar';
 import Footer from '@/components/main/Footer';
+import FloatingWhatsApp from '@/components/main/shared/FloatingWhatsApp';
 import { getFooterData } from '@/lib/data/footerData';
 
 export const revalidate = 3600;
@@ -23,6 +24,7 @@ export default async function MainLayout({
                 {children}
             </main>
             <Footer />
+            <FloatingWhatsApp />
         </>
     );
 }

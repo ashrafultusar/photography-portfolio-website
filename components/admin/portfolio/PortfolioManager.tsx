@@ -103,7 +103,7 @@ export default function PortfolioManager({
     }
 
     loadData();
-  }, [initialAlbums]);
+  }, []);
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
