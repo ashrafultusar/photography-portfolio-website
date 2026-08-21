@@ -7,6 +7,7 @@ import WhyChooseUs from '@/components/main/about/WhyChooseUs';
 import { getAboutPageData } from '@/lib/data/aboutData';
 
 
+export const dynamic = 'force-static';
 export const revalidate = 3600;
 
 export const metadata = {

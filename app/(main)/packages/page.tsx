@@ -2,6 +2,7 @@ import React from 'react';
 import PackagePage from '@/components/main/package/PackagePage';
 import { getPackagesPageData } from '@/lib/data/packagesData';
 
+export const dynamic = 'force-static';
 export const revalidate = 3600;
 
 export const metadata = {

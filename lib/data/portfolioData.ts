@@ -20,43 +20,51 @@ const formattedFallbackAlbums: PortfolioAlbumData[] = FALLBACK_ALBUMS.map((a) =>
     images: a.images || [],
 }));
 
-/**
- * GET Portfolio albums summary (lightweight query for grids - excludes heavy image arrays)
- */
-export const getPortfolioAlbumsSummaryData = unstable_cache(
-    async (): Promise<PortfolioAlbumData[]> => {
-        try {
-            await connectDB();
-            // Project lightweight fields to prevent fetching massive image arrays over the network
-            const albums: any[] = await Portfolio.find()
-                .select("title slug category clientName eventDate location coverImage description featured")
-                .sort({ createdAt: -1 })
-                .lean();
+import { cache } from "react";
 
-            if (albums && albums.length > 0) {
-                return albums.map((a: any) => ({
-                    id: a._id.toString(),
-                    slug: a.slug,
-                    title: a.title,
-                    category: a.category,
-                    clientName: a.clientName || "",
-                    eventDate: a.eventDate || "",
-                    location: a.location || "Dhaka, Bangladesh",
-                    coverImage: a.coverImage,
-                    description: a.description || "",
-                    featured: a.featured || false,
-                    photoCount: Array.isArray(a.images) ? a.images.length : 0,
-                    images: [], // Lightweight: images array intentionally empty for grid views
-                }));
-            }
-        } catch (error) {
-            console.error("Error fetching portfolio albums summary from DB:", error);
+const fetchPortfolioAlbumsSummaryFromDB = async (): Promise<PortfolioAlbumData[]> => {
+    try {
+        await connectDB();
+        const queryPromise = Portfolio.find()
+            .select("title slug category clientName eventDate location coverImage description featured")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const albums: any = await Promise.race([queryPromise, timeoutPromise]);
+
+        if (albums && albums.length > 0) {
+            return albums.map((a: any) => ({
+                id: a._id.toString(),
+                slug: a.slug,
+                title: a.title,
+                category: a.category,
+                clientName: a.clientName || "",
+                eventDate: a.eventDate || "",
+                location: a.location || "Dhaka, Bangladesh",
+                coverImage: a.coverImage,
+                description: a.description || "",
+                featured: a.featured || false,
+                photoCount: Array.isArray(a.images) ? a.images.length : 0,
+                images: [],
+            }));
         }
+    } catch (error) {
+        console.error("Error fetching portfolio albums summary from DB:", error);
+    }
 
-        return formattedFallbackAlbums.map((a) => ({ ...a, images: [] }));
-    },
-    ["portfolio-summary-cache"],
-    { tags: ["portfolio"], revalidate: 3600 }
+    return formattedFallbackAlbums.map((a) => ({ ...a, images: [] }));
+};
+
+/**
+ * GET Portfolio albums summary (two-tier caching: React cache + unstable_cache)
+ */
+export const getPortfolioAlbumsSummaryData = cache(
+    unstable_cache(
+        fetchPortfolioAlbumsSummaryFromDB,
+        ["portfolio-summary-cache"],
+        { tags: ["portfolio"], revalidate: 3600 }
+    )
 );
 
 export async function getPortfolioAlbumsData(): Promise<PortfolioAlbumData[]> {

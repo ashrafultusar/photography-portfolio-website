@@ -5,6 +5,7 @@ import QuickContact from "@/components/main/contact/QuickContact";
 import WhatsAppCTA from "@/components/main/contact/WhatsAppCTA";
 import { getContactPageData } from "@/lib/data/contactData";
 
+export const dynamic = 'force-static';
 export const revalidate = 3600;
 
 export async function generateMetadata() {

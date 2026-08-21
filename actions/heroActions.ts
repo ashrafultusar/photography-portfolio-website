@@ -111,6 +111,8 @@ export async function addHeroSlideAction(slide: IHeroImage) {
             });
         }
 
+        revalidateHeroCache();
+
         return {
             success: true,
             message: "Slider image added successfully!",

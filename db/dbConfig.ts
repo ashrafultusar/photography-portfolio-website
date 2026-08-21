@@ -12,7 +12,7 @@ declare global {
   var mongoose: MongooseCache;
 }
 
-// Initialize cache
+// Initialize global cache
 let cached = global.mongoose;
 
 if (!cached) {
@@ -20,7 +20,7 @@ if (!cached) {
 }
 
 export const connectDB = async () => {
-  // If connection is already open and ready, return immediately
+  // Return active connection if ready
   if (mongoose.connection && mongoose.connection.readyState === 1) {
     return mongoose.connection;
   }
@@ -30,13 +30,15 @@ export const connectDB = async () => {
   }
 
   if (!cached.promise) {
-    const opts = {
+    const opts: mongoose.ConnectOptions = {
       dbName: "photography",
       bufferCommands: false,
       maxPoolSize: 10,
-      connectTimeoutMS: 5000,
+      minPoolSize: 1,
+      maxIdleTimeMS: 10000,
+      connectTimeoutMS: 3000,
       socketTimeoutMS: 30000,
-      serverSelectionTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 2500,
     };
 
     if (!process.env.MONGO_URI) {

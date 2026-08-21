@@ -4,65 +4,80 @@ import { connectDB } from "@/db/dbConfig";
 import Category from "@/models/Category";
 import { CategoryData } from "@/lib/types/portfolio";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
+
+const fetchCategoryNamesFromDB = async (): Promise<string[]> => {
+    try {
+        await connectDB();
+        const queryPromise = Category.find().sort({ name: 1 }).lean();
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const categories: any = await Promise.race([queryPromise, timeoutPromise]);
+
+        if (categories && Array.isArray(categories)) {
+            return categories.map((c) => c.name);
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching category names:", error);
+        return [];
+    }
+};
 
 /**
- * GET Category names list from DB (cached)
+ * GET Category names list from DB (two-tier cached)
  */
-export async function getCategoryNames(): Promise<string[]> {
-    const cachedFetch = unstable_cache(
-        async (): Promise<string[]> => {
-            try {
-                await connectDB();
-                const categories: any[] = await Category.find().sort({ name: 1 }).lean();
-
-                return categories.map((c) => c.name);
-            } catch (error) {
-                console.error("Error fetching category names:", error);
-                return [];
-            }
-        },
+export const getCategoryNames = cache(
+    unstable_cache(
+        fetchCategoryNamesFromDB,
         ["category-names-cache"],
         { tags: ["categories"], revalidate: 3600 }
-    );
+    )
+);
 
-    return cachedFetch();
-}
+const fetchCategoriesFromDB = async (): Promise<{ success: boolean; categories: CategoryData[]; error?: string }> => {
+    try {
+        await connectDB();
+        const queryPromise = Category.find().sort({ name: 1 }).lean();
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const dbCategories: any = await Promise.race([queryPromise, timeoutPromise]);
+
+        if (dbCategories && Array.isArray(dbCategories)) {
+            const categoriesList: CategoryData[] = dbCategories.map((c) => ({
+                id: c._id.toString(),
+                name: c.name,
+                slug: c.slug,
+            }));
+
+            return {
+                success: true,
+                categories: categoriesList,
+            };
+        }
+
+        return { success: true, categories: [] };
+    } catch (error: any) {
+        console.error("Error fetching categories:", error);
+        return {
+            success: false,
+            categories: [],
+            error: error.message,
+        };
+    }
+};
 
 /**
- * GET All Category records from DB (cached)
+ * GET All Category records from DB (two-tier cached)
  */
-export async function getCategories(): Promise<{ success: boolean; categories: CategoryData[]; error?: string }> {
-    const cachedFetch = unstable_cache(
-        async (): Promise<{ success: boolean; categories: CategoryData[]; error?: string }> => {
-            try {
-                await connectDB();
-                const dbCategories: any[] = await Category.find().sort({ name: 1 }).lean();
-
-                const categoriesList: CategoryData[] = dbCategories.map((c) => ({
-                    id: c._id.toString(),
-                    name: c.name,
-                    slug: c.slug,
-                }));
-
-                return {
-                    success: true,
-                    categories: categoriesList,
-                };
-            } catch (error: any) {
-                console.error("Error fetching categories:", error);
-                return {
-                    success: false,
-                    categories: [],
-                    error: error.message,
-                };
-            }
-        },
+const cachedGetCategories = cache(
+    unstable_cache(
+        fetchCategoriesFromDB,
         ["categories-list-cache"],
         { tags: ["categories"], revalidate: 3600 }
-    );
+    )
+);
 
-    const result = await cachedFetch();
-
-    // Convert Mongoose structures or plain structures to ensure Next.js serialization compatibility
+export async function getCategories(): Promise<{ success: boolean; categories: CategoryData[]; error?: string }> {
+    const result = await cachedGetCategories();
     return JSON.parse(JSON.stringify(result));
 }
+

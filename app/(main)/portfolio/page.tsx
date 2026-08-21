@@ -4,6 +4,7 @@ import PortfolioGallery from '@/components/main/portfolio/PortfolioGallery';
 import { getPortfolioAlbumsSummaryData } from '@/lib/data/portfolioData';
 import { getCategoryNames } from '@/lib/data/categoryData';
 
+export const dynamic = 'force-static';
 export const revalidate = 3600;
 
 export const metadata = {

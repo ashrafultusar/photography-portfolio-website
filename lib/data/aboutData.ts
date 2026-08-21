@@ -86,82 +86,89 @@ const sanitizeImg = (url: any, fallback: string): string => {
     return url;
 };
 
-export const getAboutPageData = unstable_cache(
-    async (): Promise<AboutPageData> => {
-        try {
-            await connectDB();
-            const doc: any = await AboutPage.findOne()
-                .select(
-                    "homeSection heroSection companyStory teamSection statsSection whyChooseUs"
-                )
-                .lean();
+import { cache } from "react";
 
-            if (doc) {
-                return {
-                    homeSection: {
-                        eyebrow: doc.homeSection?.eyebrow ?? FALLBACK_ABOUT_DATA.homeSection.eyebrow,
-                        heading: doc.homeSection?.heading ?? FALLBACK_ABOUT_DATA.homeSection.heading,
-                        description1: doc.homeSection?.description1 ?? FALLBACK_ABOUT_DATA.homeSection.description1,
-                        description2: doc.homeSection?.description2 ?? FALLBACK_ABOUT_DATA.homeSection.description2,
-                        sinceYear: doc.homeSection?.sinceYear ?? FALLBACK_ABOUT_DATA.homeSection.sinceYear,
-                        image1: sanitizeImg(doc.homeSection?.image1, FALLBACK_ABOUT_DATA.homeSection.image1),
-                        image2: sanitizeImg(doc.homeSection?.image2, FALLBACK_ABOUT_DATA.homeSection.image2),
-                        stats: doc.homeSection?.stats !== undefined && doc.homeSection?.stats !== null
-                            ? doc.homeSection.stats.map((s: any) => ({ icon: s.icon || "camera", value: s.value, label: s.label }))
-                            : FALLBACK_ABOUT_DATA.homeSection.stats,
-                        ctaText: doc.homeSection?.ctaText ?? FALLBACK_ABOUT_DATA.homeSection.ctaText,
-                        ctaLink: doc.homeSection?.ctaLink ?? FALLBACK_ABOUT_DATA.homeSection.ctaLink,
-                    },
-                    heroSection: {
-                        eyebrow: doc.heroSection?.eyebrow || FALLBACK_ABOUT_DATA.heroSection.eyebrow,
-                        heading: doc.heroSection?.heading || FALLBACK_ABOUT_DATA.heroSection.heading,
-                        subtext: doc.heroSection?.subtext || FALLBACK_ABOUT_DATA.heroSection.subtext,
-                        bgImage: sanitizeImg(doc.heroSection?.bgImage, FALLBACK_ABOUT_DATA.heroSection.bgImage),
-                    },
-                    companyStory: {
-                        eyebrow: doc.companyStory?.eyebrow || FALLBACK_ABOUT_DATA.companyStory.eyebrow,
-                        heading: doc.companyStory?.heading || FALLBACK_ABOUT_DATA.companyStory.heading,
-                        image: sanitizeImg(doc.companyStory?.image, FALLBACK_ABOUT_DATA.companyStory.image),
-                        items: doc.companyStory?.items?.length > 0
-                            ? doc.companyStory.items.map((i: any) => ({ label: i.label, text: i.text }))
-                            : FALLBACK_ABOUT_DATA.companyStory.items,
-                    },
-                    teamSection: {
-                        eyebrow: doc.teamSection?.eyebrow || FALLBACK_ABOUT_DATA.teamSection.eyebrow,
-                        heading: doc.teamSection?.heading || FALLBACK_ABOUT_DATA.teamSection.heading,
-                        members: doc.teamSection?.members?.length > 0
-                            ? doc.teamSection.members.map((m: any, idx: number) => ({
-                                name: m.name,
-                                role: m.role,
-                                image: sanitizeImg(m.image, FALLBACK_ABOUT_DATA.teamSection.members[idx % 4]?.image || "/hero/1.jpg"),
-                                bio: m.bio,
-                            }))
-                            : FALLBACK_ABOUT_DATA.teamSection.members,
-                    },
-                    statsSection: {
-                        eyebrow: doc.statsSection?.eyebrow || FALLBACK_ABOUT_DATA.statsSection.eyebrow,
-                        heading: doc.statsSection?.heading || FALLBACK_ABOUT_DATA.statsSection.heading,
-                        stats: doc.statsSection?.stats?.length > 0
-                            ? doc.statsSection.stats.map((s: any) => ({ value: s.value || 0, suffix: s.suffix || "+", label: s.label }))
-                            : FALLBACK_ABOUT_DATA.statsSection.stats,
-                    },
-                    whyChooseUs: {
-                        eyebrow: doc.whyChooseUs?.eyebrow || FALLBACK_ABOUT_DATA.whyChooseUs.eyebrow,
-                        heading: doc.whyChooseUs?.heading || FALLBACK_ABOUT_DATA.whyChooseUs.heading,
-                        items: doc.whyChooseUs?.items?.length > 0
-                            ? doc.whyChooseUs.items.map((i: any) => ({ icon: i.icon || "star", title: i.title, desc: i.desc }))
-                            : FALLBACK_ABOUT_DATA.whyChooseUs.items,
-                    },
-                };
-            }
-        } catch (error) {
-            console.error("Error fetching AboutPage data:", error);
+const fetchAboutPageDataFromDB = async (): Promise<AboutPageData> => {
+    try {
+        await connectDB();
+        const docPromise = AboutPage.findOne()
+            .select("homeSection heroSection companyStory teamSection statsSection whyChooseUs")
+            .lean();
+
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const doc: any = await Promise.race([docPromise, timeoutPromise]);
+
+        if (doc) {
+            return {
+                homeSection: {
+                    eyebrow: doc.homeSection?.eyebrow ?? FALLBACK_ABOUT_DATA.homeSection.eyebrow,
+                    heading: doc.homeSection?.heading ?? FALLBACK_ABOUT_DATA.homeSection.heading,
+                    description1: doc.homeSection?.description1 ?? FALLBACK_ABOUT_DATA.homeSection.description1,
+                    description2: doc.homeSection?.description2 ?? FALLBACK_ABOUT_DATA.homeSection.description2,
+                    sinceYear: doc.homeSection?.sinceYear ?? FALLBACK_ABOUT_DATA.homeSection.sinceYear,
+                    image1: sanitizeImg(doc.homeSection?.image1, FALLBACK_ABOUT_DATA.homeSection.image1),
+                    image2: sanitizeImg(doc.homeSection?.image2, FALLBACK_ABOUT_DATA.homeSection.image2),
+                    stats: doc.homeSection?.stats !== undefined && doc.homeSection?.stats !== null
+                        ? doc.homeSection.stats.map((s: any) => ({ icon: s.icon || "camera", value: s.value, label: s.label }))
+                        : FALLBACK_ABOUT_DATA.homeSection.stats,
+                    ctaText: doc.homeSection?.ctaText ?? FALLBACK_ABOUT_DATA.homeSection.ctaText,
+                    ctaLink: doc.homeSection?.ctaLink ?? FALLBACK_ABOUT_DATA.homeSection.ctaLink,
+                },
+                heroSection: {
+                    eyebrow: doc.heroSection?.eyebrow || FALLBACK_ABOUT_DATA.heroSection.eyebrow,
+                    heading: doc.heroSection?.heading || FALLBACK_ABOUT_DATA.heroSection.heading,
+                    subtext: doc.heroSection?.subtext || FALLBACK_ABOUT_DATA.heroSection.subtext,
+                    bgImage: sanitizeImg(doc.heroSection?.bgImage, FALLBACK_ABOUT_DATA.heroSection.bgImage),
+                },
+                companyStory: {
+                    eyebrow: doc.companyStory?.eyebrow || FALLBACK_ABOUT_DATA.companyStory.eyebrow,
+                    heading: doc.companyStory?.heading || FALLBACK_ABOUT_DATA.companyStory.heading,
+                    image: sanitizeImg(doc.companyStory?.image, FALLBACK_ABOUT_DATA.companyStory.image),
+                    items: doc.companyStory?.items?.length > 0
+                        ? doc.companyStory.items.map((i: any) => ({ label: i.label, text: i.text }))
+                        : FALLBACK_ABOUT_DATA.companyStory.items,
+                },
+                teamSection: {
+                    eyebrow: doc.teamSection?.eyebrow || FALLBACK_ABOUT_DATA.teamSection.eyebrow,
+                    heading: doc.teamSection?.heading || FALLBACK_ABOUT_DATA.teamSection.heading,
+                    members: doc.teamSection?.members?.length > 0
+                        ? doc.teamSection.members.map((m: any, idx: number) => ({
+                            name: m.name,
+                            role: m.role,
+                            image: sanitizeImg(m.image, FALLBACK_ABOUT_DATA.teamSection.members[idx % 4]?.image || "/hero/1.jpg"),
+                            bio: m.bio,
+                        }))
+                        : FALLBACK_ABOUT_DATA.teamSection.members,
+                },
+                statsSection: {
+                    eyebrow: doc.statsSection?.eyebrow || FALLBACK_ABOUT_DATA.statsSection.eyebrow,
+                    heading: doc.statsSection?.heading || FALLBACK_ABOUT_DATA.statsSection.heading,
+                    stats: doc.statsSection?.stats?.length > 0
+                        ? doc.statsSection.stats.map((s: any) => ({ value: s.value || 0, suffix: s.suffix || "+", label: s.label }))
+                        : FALLBACK_ABOUT_DATA.statsSection.stats,
+                },
+                whyChooseUs: {
+                    eyebrow: doc.whyChooseUs?.eyebrow || FALLBACK_ABOUT_DATA.whyChooseUs.eyebrow,
+                    heading: doc.whyChooseUs?.heading || FALLBACK_ABOUT_DATA.whyChooseUs.heading,
+                    items: doc.whyChooseUs?.items?.length > 0
+                        ? doc.whyChooseUs.items.map((i: any) => ({ icon: i.icon || "star", title: i.title, desc: i.desc }))
+                        : FALLBACK_ABOUT_DATA.whyChooseUs.items,
+                },
+            };
         }
+    } catch (error) {
+        console.error("Error fetching AboutPage data:", error);
+    }
 
-        return FALLBACK_ABOUT_DATA;
-    },
-    ["about-page-cache"],
-    { tags: ["about"], revalidate: 3600 }
+    return FALLBACK_ABOUT_DATA;
+};
+
+export const getAboutPageData = cache(
+    unstable_cache(
+        fetchAboutPageDataFromDB,
+        ["about-page-cache"],
+        { tags: ["about"], revalidate: 3600 }
+    )
 );
 
 

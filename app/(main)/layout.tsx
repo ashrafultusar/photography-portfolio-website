@@ -4,6 +4,7 @@ import Footer from '@/components/main/Footer';
 import FloatingWhatsApp from '@/components/main/shared/FloatingWhatsApp';
 import { getFooterData } from '@/lib/data/footerData';
 
+export const dynamic = 'force-static';
 export const revalidate = 3600;
 
 export default async function MainLayout({

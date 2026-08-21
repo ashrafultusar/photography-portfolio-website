@@ -101,63 +101,72 @@ export const FALLBACK_PACKAGES_DATA: PackagesPageData = {
     },
 };
 
-export const getPackagesPageData = unstable_cache(
-    async (): Promise<PackagesPageData> => {
-        try {
-            await connectDB();
-            const doc: any = await PackagesPage.findOne()
-                .select("heroSection pricingSection addOnsSection")
-                .lean();
+import { cache } from "react";
 
-            if (doc) {
-                return {
-                    heroSection: {
-                        eyebrow: doc.heroSection?.eyebrow || FALLBACK_PACKAGES_DATA.heroSection.eyebrow,
-                        heading: doc.heroSection?.heading || FALLBACK_PACKAGES_DATA.heroSection.heading,
-                        subtext: doc.heroSection?.subtext || FALLBACK_PACKAGES_DATA.heroSection.subtext,
-                        bgImage: doc.heroSection?.bgImage || FALLBACK_PACKAGES_DATA.heroSection.bgImage,
-                    },
-                    pricingSection: {
-                        sectionEyebrow: doc.pricingSection?.sectionEyebrow || FALLBACK_PACKAGES_DATA.pricingSection.sectionEyebrow,
-                        sectionHeading: doc.pricingSection?.sectionHeading || FALLBACK_PACKAGES_DATA.pricingSection.sectionHeading,
-                        sectionHeadingAccent: doc.pricingSection?.sectionHeadingAccent || FALLBACK_PACKAGES_DATA.pricingSection.sectionHeadingAccent,
-                        sectionDesc: doc.pricingSection?.sectionDesc || FALLBACK_PACKAGES_DATA.pricingSection.sectionDesc,
-                        noteText: doc.pricingSection?.noteText || FALLBACK_PACKAGES_DATA.pricingSection.noteText,
-                        packages:
-                            doc.pricingSection?.packages?.length > 0
-                                ? doc.pricingSection.packages.map((p: any) => ({
-                                    name: p.name,
-                                    tagline: p.tagline || "",
-                                    price: p.price,
-                                    unit: p.unit || "per event",
-                                    featured: p.featured || false,
-                                    features: p.features || [],
-                                }))
-                                : FALLBACK_PACKAGES_DATA.pricingSection.packages,
-                    },
-                    addOnsSection: {
-                        sectionEyebrow: doc.addOnsSection?.sectionEyebrow || FALLBACK_PACKAGES_DATA.addOnsSection.sectionEyebrow,
-                        sectionHeading: doc.addOnsSection?.sectionHeading || FALLBACK_PACKAGES_DATA.addOnsSection.sectionHeading,
-                        sectionDesc: doc.addOnsSection?.sectionDesc || FALLBACK_PACKAGES_DATA.addOnsSection.sectionDesc,
-                        ctaNote: doc.addOnsSection?.ctaNote || FALLBACK_PACKAGES_DATA.addOnsSection.ctaNote,
-                        addOns:
-                            doc.addOnsSection?.addOns?.length > 0
-                                ? doc.addOnsSection.addOns.map((a: any) => ({
-                                    icon: a.icon || "star",
-                                    title: a.title,
-                                    desc: a.desc || "",
-                                    price: a.price,
-                                }))
-                                : FALLBACK_PACKAGES_DATA.addOnsSection.addOns,
-                    },
-                };
-            }
-        } catch (error) {
-            console.error("Error fetching PackagesPage data:", error);
+const fetchPackagesPageDataFromDB = async (): Promise<PackagesPageData> => {
+    try {
+        await connectDB();
+        const docPromise = PackagesPage.findOne()
+            .select("heroSection pricingSection addOnsSection")
+            .lean();
+
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const doc: any = await Promise.race([docPromise, timeoutPromise]);
+
+        if (doc) {
+            return {
+                heroSection: {
+                    eyebrow: doc.heroSection?.eyebrow || FALLBACK_PACKAGES_DATA.heroSection.eyebrow,
+                    heading: doc.heroSection?.heading || FALLBACK_PACKAGES_DATA.heroSection.heading,
+                    subtext: doc.heroSection?.subtext || FALLBACK_PACKAGES_DATA.heroSection.subtext,
+                    bgImage: doc.heroSection?.bgImage || FALLBACK_PACKAGES_DATA.heroSection.bgImage,
+                },
+                pricingSection: {
+                    sectionEyebrow: doc.pricingSection?.sectionEyebrow || FALLBACK_PACKAGES_DATA.pricingSection.sectionEyebrow,
+                    sectionHeading: doc.pricingSection?.sectionHeading || FALLBACK_PACKAGES_DATA.pricingSection.sectionHeading,
+                    sectionHeadingAccent: doc.pricingSection?.sectionHeadingAccent || FALLBACK_PACKAGES_DATA.pricingSection.sectionHeadingAccent,
+                    sectionDesc: doc.pricingSection?.sectionDesc || FALLBACK_PACKAGES_DATA.pricingSection.sectionDesc,
+                    noteText: doc.pricingSection?.noteText || FALLBACK_PACKAGES_DATA.pricingSection.noteText,
+                    packages:
+                        doc.pricingSection?.packages?.length > 0
+                            ? doc.pricingSection.packages.map((p: any) => ({
+                                name: p.name,
+                                tagline: p.tagline || "",
+                                price: p.price,
+                                unit: p.unit || "per event",
+                                featured: p.featured || false,
+                                features: p.features || [],
+                            }))
+                            : FALLBACK_PACKAGES_DATA.pricingSection.packages,
+                },
+                addOnsSection: {
+                    sectionEyebrow: doc.addOnsSection?.sectionEyebrow || FALLBACK_PACKAGES_DATA.addOnsSection.sectionEyebrow,
+                    sectionHeading: doc.addOnsSection?.sectionHeading || FALLBACK_PACKAGES_DATA.addOnsSection.sectionHeading,
+                    sectionDesc: doc.addOnsSection?.sectionDesc || FALLBACK_PACKAGES_DATA.addOnsSection.sectionDesc,
+                    ctaNote: doc.addOnsSection?.ctaNote || FALLBACK_PACKAGES_DATA.addOnsSection.ctaNote,
+                    addOns:
+                        doc.addOnsSection?.addOns?.length > 0
+                            ? doc.addOnsSection.addOns.map((a: any) => ({
+                                icon: a.icon || "star",
+                                title: a.title,
+                                desc: a.desc || "",
+                                price: a.price,
+                            }))
+                            : FALLBACK_PACKAGES_DATA.addOnsSection.addOns,
+                },
+            };
         }
+    } catch (error) {
+        console.error("Error fetching PackagesPage data:", error);
+    }
 
-        return FALLBACK_PACKAGES_DATA;
-    },
-    ["packages-page-cache"],
-    { tags: ["packages"], revalidate: 3600 }
+    return FALLBACK_PACKAGES_DATA;
+};
+
+export const getPackagesPageData = cache(
+    unstable_cache(
+        fetchPackagesPageDataFromDB,
+        ["packages-page-cache"],
+        { tags: ["packages"], revalidate: 3600 }
+    )
 );
