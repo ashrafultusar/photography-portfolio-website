@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AdminUser } from "@/lib/data/adminsData";
 import { UserCheck, UserPlus, Mail, Calendar, Shield, User, Trash2, ShieldAlert, Loader2 } from "lucide-react";
@@ -14,6 +14,10 @@ export default function AdminsManager({ admins }: AdminsManagerProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [userList, setUserList] = useState<AdminUser[]>(admins);
+
+    useEffect(() => {
+        setUserList(admins);
+    }, [admins]);
 
     const handleRoleToggle = async (userId: string, currentRole: "user" | "admin") => {
         const nextRole = currentRole === "admin" ? "user" : "admin";
@@ -170,8 +174,8 @@ export default function AdminsManager({ admins }: AdminsManagerProps) {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-sm ${isAdmin
-                                                            ? "bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950"
-                                                            : "bg-slate-200 text-slate-700"
+                                                        ? "bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950"
+                                                        : "bg-slate-200 text-slate-700"
                                                         }`}>
                                                         {userItem.name.charAt(0).toUpperCase()}
                                                     </div>
@@ -210,8 +214,8 @@ export default function AdminsManager({ admins }: AdminsManagerProps) {
                                                     onClick={() => handleRoleToggle(userItem.id, userItem.role)}
                                                     disabled={isLoadingRole || isDeleting}
                                                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${isAdmin
-                                                            ? "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300"
-                                                            : "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300"
+                                                        ? "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300"
+                                                        : "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300"
                                                         } disabled:opacity-50`}
                                                     title={isAdmin ? "Demote to User" : "Make Admin"}
                                                 >

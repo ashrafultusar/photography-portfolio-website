@@ -9,6 +9,7 @@ import User from "@/models/User";
 import { connectDB } from "@/db/dbConfig";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import sanitize from "mongo-sanitize";
 import { checkRateLimit } from "@/lib/rateLimit";
 
@@ -58,6 +59,7 @@ export async function register(prevState: any, formData: FormData) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     await User.create({ name, email, password: hashedPassword });
+    revalidatePath("/my-dashboard/admins");
 
     return { success: true, message: "Account created. You can now log in." };
   } catch (error) {
