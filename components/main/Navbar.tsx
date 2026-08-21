@@ -49,6 +49,16 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await signOut({ redirect: false });
+    } catch (err) {
+      console.error("SignOut error:", err);
+    } finally {
+      window.location.href = "/login";
+    }
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
@@ -122,6 +132,16 @@ const Navbar = ({ logoUrl = "/logo.jpeg", brandName = "Moment that matters", bra
           >
             Book Now
           </Link>
+          <button
+                type="button"
+                onClick={handleLogout}
+                title="Sign out"
+                className="w-10 h-10 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 flex items-center justify-center transition-all cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12" />
+                </svg>
+              </button>
         </div>
 
         {/* Mobile Menu Button */}
