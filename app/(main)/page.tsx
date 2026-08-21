@@ -11,8 +11,8 @@ export const revalidate = 3600;
 
 function SectionSkeleton({ height = "h-96" }: { height?: string }) {
     return (
-        <div className={`w-full ${height} bg-neutral-900/40 animate-pulse border-b border-neutral-800/50 flex items-center justify-center`}>
-            <div className="w-12 h-12 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
+        <div className={`w-full ${height} bg-white animate-pulse border-b border-slate-100 flex flex-col items-center justify-center`}>
+            <div className="w-12 h-12 rounded-full border-4 border-amber-100 border-t-amber-500 animate-spin" />
         </div>
     );
 }

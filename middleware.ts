@@ -25,9 +25,7 @@ export default auth((req: NextAuthRequest) => {
     const isAdminRoute =
         nextUrl.pathname.startsWith("/admin") ||
         nextUrl.pathname.startsWith("/my-dashboard");
-    const isAuthRoute =
-        nextUrl.pathname.startsWith("/login") ||
-        nextUrl.pathname.startsWith("/register");
+    const isLoginRoute = nextUrl.pathname.startsWith("/login");
 
     // Helper to append no-cache headers to prevent browser Back button (BFCache) access
     const addNoCacheHeaders = (response: NextResponse) => {
@@ -57,8 +55,8 @@ export default auth((req: NextAuthRequest) => {
         return addNoCacheHeaders(response);
     }
 
-    // 2. Redirect already-logged-in users away from auth pages
-    if (isAuthRoute && isLoggedIn) {
+    // 2. Redirect already-logged-in users away from login page only (register page remains accessible)
+    if (isLoginRoute && isLoggedIn) {
         if (userRole === "admin") {
             return addNoCacheHeaders(NextResponse.redirect(new URL(`${origin}/my-dashboard`)));
         }

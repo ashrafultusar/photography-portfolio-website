@@ -27,7 +27,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-full flex flex-col bg-neutral-950">
+      <body className="min-h-full flex flex-col bg-white">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
