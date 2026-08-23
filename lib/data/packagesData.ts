@@ -110,7 +110,7 @@ const fetchPackagesPageDataFromDB = async (): Promise<PackagesPageData> => {
             .select("heroSection pricingSection addOnsSection")
             .lean();
 
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const doc: any = await Promise.race([docPromise, timeoutPromise]);
 
         if (doc) {

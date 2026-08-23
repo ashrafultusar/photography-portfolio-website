@@ -27,6 +27,7 @@ const revalidateHeroCache = () => {
     } catch (e) {
         console.error("revalidateTag error:", e);
     }
+    revalidatePath("/", "layout");
     revalidatePath("/");
     revalidatePath("/my-dashboard/hero");
 };

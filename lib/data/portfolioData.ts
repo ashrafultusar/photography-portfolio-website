@@ -30,7 +30,7 @@ const fetchPortfolioAlbumsSummaryFromDB = async (): Promise<PortfolioAlbumData[]
             .sort({ createdAt: -1 })
             .lean();
 
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const albums: any = await Promise.race([queryPromise, timeoutPromise]);
 
         if (albums && albums.length > 0) {

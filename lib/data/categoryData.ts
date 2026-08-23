@@ -10,7 +10,7 @@ const fetchCategoryNamesFromDB = async (): Promise<string[]> => {
     try {
         await connectDB();
         const queryPromise = Category.find().sort({ name: 1 }).lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const categories: any = await Promise.race([queryPromise, timeoutPromise]);
 
         if (categories && Array.isArray(categories)) {
@@ -38,7 +38,7 @@ const fetchCategoriesFromDB = async (): Promise<{ success: boolean; categories: 
     try {
         await connectDB();
         const queryPromise = Category.find().sort({ name: 1 }).lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const dbCategories: any = await Promise.race([queryPromise, timeoutPromise]);
 
         if (dbCategories && Array.isArray(dbCategories)) {

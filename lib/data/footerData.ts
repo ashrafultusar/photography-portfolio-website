@@ -34,7 +34,7 @@ const fetchFooterDataFromDB = async (): Promise<FooterData> => {
     try {
         await connectDB();
         const footerPromise = Footer.findOne().lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const footer: any = await Promise.race([footerPromise, timeoutPromise]);
 
         if (footer) {

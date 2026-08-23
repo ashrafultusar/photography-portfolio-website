@@ -95,7 +95,7 @@ const fetchAboutPageDataFromDB = async (): Promise<AboutPageData> => {
             .select("homeSection heroSection companyStory teamSection statsSection whyChooseUs")
             .lean();
 
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const doc: any = await Promise.race([docPromise, timeoutPromise]);
 
         if (doc) {

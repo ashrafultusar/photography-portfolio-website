@@ -25,8 +25,8 @@ const fetchHeroDataFromDB = async (): Promise<HeroSectionData> => {
             .select("subtitle title description buttonText buttonLink images")
             .lean();
 
-        // 2.5 second maximum timeout guard for database queries
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        // 800ms maximum timeout guard for database queries to prevent SSR blocking
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const hero: any = await Promise.race([heroPromise, timeoutPromise]);
 
         if (hero) {

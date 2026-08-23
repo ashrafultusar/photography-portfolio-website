@@ -19,6 +19,7 @@ export async function updateContactPageAction(data: ContactPageData) {
         }
 
         (revalidateTag as any)("contact");
+        revalidatePath("/", "layout");
         revalidatePath("/contact");
         revalidatePath("/my-dashboard/contact");
 

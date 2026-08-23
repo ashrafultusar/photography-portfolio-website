@@ -17,6 +17,18 @@ async function getOrCreateDoc() {
     return doc;
 }
 
+const revalidatePackagesCache = () => {
+    try {
+        (revalidateTag as any)("packages");
+    } catch (e) {
+        console.error("revalidateTag error:", e);
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/packages");
+    revalidatePath("/my-dashboard/packages");
+};
+
 // ---------- GET ----------
 export async function getPackagesPageAction() {
     try {
@@ -41,9 +53,7 @@ export async function updatePackagesHeroSection(data: PackagesHeroData) {
         };
         await doc.save();
 
-        (revalidateTag as any)("packages");
-        revalidatePath("/packages");
-        revalidatePath("/my-dashboard/packages");
+        revalidatePackagesCache();
 
         return { success: true, message: "Hero section saved successfully!" };
     } catch (error: any) {
@@ -73,10 +83,7 @@ export async function updatePricingSection(data: PricingSectionData) {
         };
         await doc.save();
 
-        (revalidateTag as any)("packages");
-        revalidatePath("/packages");
-        revalidatePath("/");
-        revalidatePath("/my-dashboard/packages");
+        revalidatePackagesCache();
 
         return { success: true, message: "Pricing section saved successfully!" };
     } catch (error: any) {
@@ -103,9 +110,7 @@ export async function updateAddOnsSection(data: AddOnsSectionData) {
         };
         await doc.save();
 
-        (revalidateTag as any)("packages");
-        revalidatePath("/packages");
-        revalidatePath("/my-dashboard/packages");
+        revalidatePackagesCache();
 
         return { success: true, message: "Add-Ons section saved successfully!" };
     } catch (error: any) {

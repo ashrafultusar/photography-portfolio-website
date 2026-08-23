@@ -30,6 +30,7 @@ export async function createCategory(name: string) {
 
         (revalidateTag as any)("categories");
         (revalidateTag as any)("portfolio");
+        revalidatePath("/", "layout");
         revalidatePath("/portfolio");
         revalidatePath("/");
         revalidatePath("/my-dashboard/portfolio");
@@ -52,6 +53,7 @@ export async function deleteCategory(id: string) {
 
         (revalidateTag as any)("categories");
         (revalidateTag as any)("portfolio");
+        revalidatePath("/", "layout");
         revalidatePath("/portfolio");
         revalidatePath("/");
         revalidatePath("/my-dashboard/portfolio");

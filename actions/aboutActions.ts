@@ -30,6 +30,17 @@ export async function getAboutPageAction() {
     }
 }
 
+const revalidateAboutCache = () => {
+    try {
+        (revalidateTag as any)("about");
+    } catch (e) {
+        console.error("revalidateTag error:", e);
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/about");
+    revalidatePath("/my-dashboard/about");
+};
+
 // ── Section 0: Homepage About ──
 export async function updateHomeAboutSection(data: HomeAboutData) {
     try {
@@ -57,10 +68,7 @@ export async function updateHomeAboutSection(data: HomeAboutData) {
             { upsert: true, new: true }
         );
 
-        (revalidateTag as any)("about");
-        revalidatePath("/");
-        revalidatePath("/about");
-        revalidatePath("/my-dashboard/about");
+        revalidateAboutCache();
         return { success: true, message: "Homepage About section saved successfully!" };
     } catch (error: any) {
         console.error("Error updating home section:", error);
@@ -75,9 +83,7 @@ export async function updateAboutHeroSection(data: AboutHeroData) {
         const doc = await getOrCreateDoc();
         doc.heroSection = { eyebrow: data.eyebrow, heading: data.heading, subtext: data.subtext, bgImage: data.bgImage };
         await doc.save();
-        (revalidateTag as any)("about");
-        revalidatePath("/about");
-        revalidatePath("/my-dashboard/about");
+        revalidateAboutCache();
         return { success: true, message: "Hero section saved!" };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to save." };
@@ -95,9 +101,7 @@ export async function updateCompanyStory(data: CompanyStoryData) {
             items: data.items.map((i) => ({ label: i.label, text: i.text })),
         };
         await doc.save();
-        (revalidateTag as any)("about");
-        revalidatePath("/about");
-        revalidatePath("/my-dashboard/about");
+        revalidateAboutCache();
         return { success: true, message: "Company Story saved!" };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to save." };
@@ -114,9 +118,7 @@ export async function updateTeamSection(data: TeamSectionData) {
             members: data.members.map((m) => ({ name: m.name, role: m.role, image: m.image, bio: m.bio })),
         };
         await doc.save();
-        (revalidateTag as any)("about");
-        revalidatePath("/about");
-        revalidatePath("/my-dashboard/about");
+        revalidateAboutCache();
         return { success: true, message: "Team section saved!" };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to save." };
@@ -133,9 +135,7 @@ export async function updateStatsSection(data: StatsSectionData) {
             stats: data.stats.map((s) => ({ value: s.value, suffix: s.suffix, label: s.label })),
         };
         await doc.save();
-        (revalidateTag as any)("about");
-        revalidatePath("/about");
-        revalidatePath("/my-dashboard/about");
+        revalidateAboutCache();
         return { success: true, message: "Stats section saved!" };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to save." };
@@ -152,9 +152,7 @@ export async function updateWhyChooseUs(data: WhyChooseUsData) {
             items: data.items.map((i) => ({ icon: i.icon, title: i.title, desc: i.desc })),
         };
         await doc.save();
-        (revalidateTag as any)("about");
-        revalidatePath("/about");
-        revalidatePath("/my-dashboard/about");
+        revalidateAboutCache();
         return { success: true, message: "Why Choose Us saved!" };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to save." };

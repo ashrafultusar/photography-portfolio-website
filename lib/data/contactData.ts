@@ -31,7 +31,7 @@ const fetchContactPageDataFromDB = async (): Promise<ContactPageData> => {
     try {
         await connectDB();
         const docPromise = ContactPage.findOne().lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
         const doc: any = await Promise.race([docPromise, timeoutPromise]);
 
         if (doc) {

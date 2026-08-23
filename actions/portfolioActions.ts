@@ -102,6 +102,23 @@ export async function uploadToCloudinary(formData: FormData): Promise<{ success:
     }
 }
 
+const revalidatePortfolioCache = (slug?: string) => {
+    try {
+        (revalidateTag as any)("portfolio");
+        (revalidateTag as any)("categories");
+        if (slug) {
+            (revalidateTag as any)(`album-${slug}`);
+            revalidatePath(`/portfolio/${slug}`);
+        }
+    } catch (e) {
+        console.error("revalidateTag error:", e);
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/portfolio");
+    revalidatePath("/my-dashboard/portfolio");
+};
+
 // ─── Album CRUD Server Actions ───────────────────────────────────────────────
 
 export async function createPortfolioAlbum(data: AlbumInputData) {
@@ -138,10 +155,7 @@ export async function createPortfolioAlbum(data: AlbumInputData) {
             featured: data.featured,
         });
 
-        (revalidateTag as any)("portfolio");
-        revalidatePath("/portfolio");
-        revalidatePath("/");
-        revalidatePath("/my-dashboard/portfolio");
+        revalidatePortfolioCache(slug);
 
         return {
             success: true,
@@ -212,10 +226,7 @@ export async function updatePortfolioAlbum(id: string, data: AlbumInputData) {
             { new: true }
         );
 
-        (revalidateTag as any)("portfolio");
-        revalidatePath("/portfolio");
-        revalidatePath("/");
-        revalidatePath("/my-dashboard/portfolio");
+        revalidatePortfolioCache(updated?.slug);
 
         return {
             success: true,
@@ -254,12 +265,9 @@ export async function getPortfolioAlbumByIdAction(id: string) {
 export async function deletePortfolioAlbum(id: string) {
     try {
         await connectDB();
-        await Portfolio.findByIdAndDelete(id);
+        const deleted = await Portfolio.findByIdAndDelete(id);
 
-        (revalidateTag as any)("portfolio");
-        revalidatePath("/portfolio");
-        revalidatePath("/");
-        revalidatePath("/my-dashboard/portfolio");
+        revalidatePortfolioCache(deleted?.slug);
 
         return {
             success: true,

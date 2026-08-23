@@ -36,9 +36,9 @@ export const connectDB = async () => {
       maxPoolSize: 10,
       minPoolSize: 1,
       maxIdleTimeMS: 10000,
-      connectTimeoutMS: 3000,
-      socketTimeoutMS: 30000,
-      serverSelectionTimeoutMS: 2500,
+      connectTimeoutMS: 1500,
+      socketTimeoutMS: 20000,
+      serverSelectionTimeoutMS: 1500,
     };
 
     if (!process.env.MONGO_URI) {
