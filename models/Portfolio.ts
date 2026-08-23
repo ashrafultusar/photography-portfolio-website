@@ -82,6 +82,9 @@ const portfolioAlbumSchema = new Schema<IPortfolioAlbum>(
     }
 );
 
+portfolioAlbumSchema.index({ category: 1, createdAt: -1 });
+portfolioAlbumSchema.index({ featured: -1, createdAt: -1 });
+
 const Portfolio: Model<IPortfolioAlbum> =
     (mongoose.models.Portfolio as Model<IPortfolioAlbum>) ||
     mongoose.model<IPortfolioAlbum>("Portfolio", portfolioAlbumSchema);

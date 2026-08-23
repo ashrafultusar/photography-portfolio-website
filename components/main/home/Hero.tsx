@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
 import Image from 'next/image';
 import { HeroSectionData } from '@/lib/types/hero';
+import { getOptimizedImageUrl } from '@/lib/imageOptimization';
 
 interface HeroProps {
     data?: HeroSectionData;
@@ -48,7 +49,7 @@ const Hero: React.FC<HeroProps> = ({ data }) => {
                 {images.map((image, index) => (
                     <SwiperSlide key={index} className="relative w-full h-full">
                         <Image
-                            src={image.src}
+                            src={getOptimizedImageUrl(image.src, 1600)}
                             alt={image.alt || title}
                             fill
                             /* Only first image gets priority for fast LCP */

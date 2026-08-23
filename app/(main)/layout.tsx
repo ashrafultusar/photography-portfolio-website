@@ -16,6 +16,10 @@ export default async function MainLayout({
 
     return (
         <>
+            <head>
+                <link rel="preconnect" href="https://res.cloudinary.com" />
+                <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+            </head>
             <Navbar
                 logoUrl={footerData.logoUrl}
                 brandName={footerData.brandName}

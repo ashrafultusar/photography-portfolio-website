@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PortfolioAlbumData } from '@/lib/types/portfolio';
 import { PortfolioAlbum } from '@/data/portfolioData';
+import { getOptimizedImageUrl } from '@/lib/imageOptimization';
 import { ArrowLeft } from 'lucide-react';
 
 interface Props {
@@ -98,7 +99,7 @@ const PortfolioDetail = ({ album }: Props) => {
                             className="relative overflow-hidden group rounded-xl border border-slate-300 cursor-zoom-in break-inside-avoid mb-4 shadow-md bg-white min-h-[220px]"
                         >
                             <Image
-                                src={img.src}
+                                src={getOptimizedImageUrl(img.src, 800)}
                                 alt={img.alt || album.title}
                                 width={600}
                                 height={400}
@@ -160,7 +161,7 @@ const PortfolioDetail = ({ album }: Props) => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <img
-                            src={album.images[lightboxIndex].src}
+                            src={getOptimizedImageUrl(album.images[lightboxIndex].src, 1600)}
                             alt={album.images[lightboxIndex].alt}
                             className="max-w-full max-h-[80vh] sm:max-h-[84vh] w-auto h-auto object-contain rounded-lg shadow-2xl border border-slate-800/80"
                         />
