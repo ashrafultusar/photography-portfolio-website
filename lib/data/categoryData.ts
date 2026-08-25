@@ -9,9 +9,7 @@ import { cache } from "react";
 const fetchCategoryNamesFromDB = async (): Promise<string[]> => {
     try {
         await connectDB();
-        const queryPromise = Category.find().sort({ name: 1 }).lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const categories: any = await Promise.race([queryPromise, timeoutPromise]);
+        const categories: any = await Category.find().sort({ name: 1 }).lean();
 
         if (categories && Array.isArray(categories)) {
             return categories.map((c) => c.name);
@@ -37,9 +35,7 @@ export const getCategoryNames = cache(
 const fetchCategoriesFromDB = async (): Promise<{ success: boolean; categories: CategoryData[]; error?: string }> => {
     try {
         await connectDB();
-        const queryPromise = Category.find().sort({ name: 1 }).lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const dbCategories: any = await Promise.race([queryPromise, timeoutPromise]);
+        const dbCategories: any = await Category.find().sort({ name: 1 }).lean();
 
         if (dbCategories && Array.isArray(dbCategories)) {
             const categoriesList: CategoryData[] = dbCategories.map((c) => ({

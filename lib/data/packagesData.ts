@@ -106,12 +106,9 @@ import { cache } from "react";
 const fetchPackagesPageDataFromDB = async (): Promise<PackagesPageData> => {
     try {
         await connectDB();
-        const docPromise = PackagesPage.findOne()
+        const doc: any = await PackagesPage.findOne()
             .select("heroSection pricingSection addOnsSection")
             .lean();
-
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const doc: any = await Promise.race([docPromise, timeoutPromise]);
 
         if (doc) {
             return {

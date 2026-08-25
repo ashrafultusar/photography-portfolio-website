@@ -33,9 +33,7 @@ import { cache } from "react";
 const fetchFooterDataFromDB = async (): Promise<FooterData> => {
     try {
         await connectDB();
-        const footerPromise = Footer.findOne().lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const footer: any = await Promise.race([footerPromise, timeoutPromise]);
+        const footer: any = await Footer.findOne().lean();
 
         if (footer) {
             return {

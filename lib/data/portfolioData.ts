@@ -25,13 +25,10 @@ import { cache } from "react";
 const fetchPortfolioAlbumsSummaryFromDB = async (): Promise<PortfolioAlbumData[]> => {
     try {
         await connectDB();
-        const queryPromise = Portfolio.find()
+        const albums: any = await Portfolio.find()
             .select("title slug category clientName eventDate location coverImage description featured")
             .sort({ createdAt: -1 })
             .lean();
-
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const albums: any = await Promise.race([queryPromise, timeoutPromise]);
 
         if (albums && albums.length > 0) {
             return albums.map((a: any) => ({

@@ -30,9 +30,7 @@ import { cache } from "react";
 const fetchContactPageDataFromDB = async (): Promise<ContactPageData> => {
     try {
         await connectDB();
-        const docPromise = ContactPage.findOne().lean();
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const doc: any = await Promise.race([docPromise, timeoutPromise]);
+        const doc: any = await ContactPage.findOne().lean();
 
         if (doc) {
             return {

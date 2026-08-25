@@ -21,13 +21,9 @@ const FALLBACK_HERO: HeroSectionData = {
 const fetchHeroDataFromDB = async (): Promise<HeroSectionData> => {
     try {
         await connectDB();
-        const heroPromise = Hero.findOne()
+        const hero: any = await Hero.findOne()
             .select("subtitle title description buttonText buttonLink images")
             .lean();
-
-        // 800ms maximum timeout guard for database queries to prevent SSR blocking
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const hero: any = await Promise.race([heroPromise, timeoutPromise]);
 
         if (hero) {
             return {

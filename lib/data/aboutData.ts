@@ -91,12 +91,9 @@ import { cache } from "react";
 const fetchAboutPageDataFromDB = async (): Promise<AboutPageData> => {
     try {
         await connectDB();
-        const docPromise = AboutPage.findOne()
+        const doc: any = await AboutPage.findOne()
             .select("homeSection heroSection companyStory teamSection statsSection whyChooseUs")
             .lean();
-
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 800));
-        const doc: any = await Promise.race([docPromise, timeoutPromise]);
 
         if (doc) {
             return {
