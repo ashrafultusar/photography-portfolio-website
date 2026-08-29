@@ -26,19 +26,22 @@ const fetchHeroDataFromDB = async (): Promise<HeroSectionData> => {
             .lean();
 
         if (hero) {
+            const validImages = hero.images
+                ? hero.images
+                    .filter((img: any) => img?.src && !img.src.startsWith("data:image/") && img.src.length < 2000)
+                    .map((img: any) => ({
+                        src: img.src,
+                        alt: img.alt || "Photography Hero Slider Image",
+                    }))
+                : [];
+
             return {
                 subtitle: hero.subtitle || FALLBACK_HERO.subtitle,
                 title: hero.title || FALLBACK_HERO.title,
                 description: hero.description || FALLBACK_HERO.description,
                 buttonText: hero.buttonText || FALLBACK_HERO.buttonText,
                 buttonLink: hero.buttonLink || FALLBACK_HERO.buttonLink,
-                images:
-                    hero.images && hero.images.length > 0
-                        ? hero.images.map((img: any) => ({
-                            src: img.src,
-                            alt: img.alt || "Photography Hero Slider Image",
-                        }))
-                        : FALLBACK_HERO.images,
+                images: validImages.length > 0 ? validImages : FALLBACK_HERO.images,
             };
         }
     } catch (error) {

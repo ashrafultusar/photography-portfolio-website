@@ -8,7 +8,7 @@ interface FloatingWhatsAppProps {
 }
 
 export default function FloatingWhatsApp({
-    phoneNumber = "8801700000000",
+    phoneNumber = "8801711731066",
     message = "Hello! I'm interested in booking The Story photography. Can we discuss?",
 }: FloatingWhatsAppProps) {
     const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
