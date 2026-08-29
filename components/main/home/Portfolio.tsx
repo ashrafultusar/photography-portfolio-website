@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { PortfolioAlbumData } from '@/lib/types/portfolio';
 import { portfolioAlbums as defaultStaticAlbums } from '@/data/portfolioData';
+import { PortfolioCard } from '@/components/main/portfolio/PortfolioCard';
 
 interface PortfolioProps {
   albums?: PortfolioAlbumData[];
@@ -31,10 +31,11 @@ const Portfolio: React.FC<PortfolioProps> = ({ albums }) => {
 
   const categories = ['All', ...Array.from(new Set(albumList.map((a) => a.category)))];
 
-  const filtered =
+  const filtered = (
     activeCategory === 'All'
       ? albumList
-      : albumList.filter((album) => album.category === activeCategory);
+      : albumList.filter((album) => album.category === activeCategory)
+  ).slice(0, 6);
 
   return (
     <section
@@ -80,61 +81,11 @@ const Portfolio: React.FC<PortfolioProps> = ({ albums }) => {
           </div>
         </div>
 
-        {/* Masonry-style grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[220px]">
-          {filtered.map((album, index) => {
-            const spans = [
-              'md:row-span-2',
-              '',
-              '',
-              'md:row-span-2',
-              '',
-              '',
-            ];
-            const spanClass = spans[index % spans.length];
-
-            return (
-              <Link
-                key={album.id}
-                href={`/portfolio/${album.slug}`}
-                className={`group relative overflow-hidden rounded-sm cursor-pointer bg-slate-200 border border-slate-300 shadow-md ${spanClass}`}
-              >
-                {/* Cover image */}
-                <Image
-                  src={album.coverImage}
-                  alt={album.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={80}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent opacity-75 group-hover:opacity-90 transition-opacity duration-500" />
-
-                {/* Photo count badge */}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-sm border border-slate-300 opacity-90 group-hover:opacity-100 transition-opacity z-10 shadow-sm">
-                  <span className="text-[10px] text-slate-900 font-mono font-bold tracking-widest">
-                    {album.photoCount || album.images?.length || 0} Photos
-                  </span>
-                </div>
-
-                {/* Info overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-10">
-                  <span className="text-amber-400 text-[10px] tracking-[0.3em] uppercase font-sans block mb-1 font-bold">
-                    {album.category}
-                  </span>
-                  <p className="text-white font-serif text-lg md:text-xl font-medium group-hover:text-amber-300 transition-colors">{album.title}</p>
-                  <p className="text-slate-300 text-xs font-sans tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {album.eventDate} · {album.location}
-                  </p>
-                </div>
-
-                {/* Corner accent */}
-                <div className="absolute top-3 right-3 w-6 h-6 border-t border-r border-amber-400/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-              </Link>
-            );
-          })}
+        {/* Uniform grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {filtered.map((album) => (
+            <PortfolioCard key={album.id} album={album} />
+          ))}
         </div>
 
         {filtered.length === 0 && (

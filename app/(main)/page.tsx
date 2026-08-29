@@ -3,6 +3,7 @@ import HeroSection from '@/components/main/home/HeroSection';
 import PortfolioSection from '@/components/main/home/PortfolioSection';
 import AboutSection from '@/components/main/home/AboutSection';
 import TeamSectionComponent from '@/components/main/home/TeamSectionComponent';
+import TestimonialsSection from '@/components/main/home/TestimonialsSection';
 import QuoteCTA from '@/components/main/home/QuoteCTA';
 import PackageCardsSection from '@/components/main/package/PackageCardsSection';
 
@@ -34,6 +35,10 @@ export default function HomePage() {
 
             <Suspense fallback={<SectionSkeleton height="h-[450px]" />}>
                 <TeamSectionComponent />
+            </Suspense>
+
+            <Suspense fallback={<SectionSkeleton height="h-[400px]" />}>
+                <TestimonialsSection />
             </Suspense>
 
             <QuoteCTA />
