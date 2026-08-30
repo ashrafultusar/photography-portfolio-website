@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { TeamSectionData, TeamMember } from '@/lib/types/about';
 import { X, Eye, User, Sparkles } from 'lucide-react';
 
@@ -49,24 +50,24 @@ const TeamSection = ({ data }: TeamSectionProps) => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {data.members.map((member) => (
+                    {data.members.map((member, index) => (
                         <div
                             key={member.name}
                             className="group relative overflow-hidden rounded-xl border border-slate-300 bg-white hover:border-amber-500 transition-all duration-300 shadow-md flex flex-col justify-between"
                         >
-                            {/* Member Image & Overlay */}
                             <div className="relative aspect-[3/4] overflow-hidden bg-slate-200">
-                                <img
+                                <Image
                                     src={member.image}
-                                    alt={member.name}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    alt={`${member.name} - ${member.role}`}
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                    priority={index < 2}
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent pointer-events-none" />
 
                                 {/* Info on Card */}
-                                <div className="absolute bottom-0 left-0 right-0 p-5 space-y-2">
+                                <div className="absolute bottom-0 left-0 right-0 p-5 space-y-2 z-10">
                                     <div>
                                         <h3 className="text-white font-serif text-lg font-bold group-hover:text-amber-300 transition-colors">
                                             {member.name}
@@ -80,7 +81,7 @@ const TeamSection = ({ data }: TeamSectionProps) => {
                                     <button
                                         onClick={() => setSelectedMember(member)}
                                         className="w-full mt-2 py-2 px-3 bg-amber-600/90 hover:bg-amber-600 text-white rounded-lg font-medium text-xs flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-[0.98]"
-                                        aria-label={`View bio for ${member.name}`}
+                                        aria-label={`View full bio and details for ${member.name}, ${member.role}`}
                                     >
                                         <Eye className="w-3.5 h-3.5" />
                                         <span>View More</span>
@@ -105,20 +106,22 @@ const TeamSection = ({ data }: TeamSectionProps) => {
                         {/* Modal Close Button */}
                         <button
                             onClick={() => setSelectedMember(null)}
-                            className="absolute top-4 right-4 z-10 p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors cursor-pointer bg-white/80 md:bg-transparent shadow-sm md:shadow-none"
-                            aria-label="Close modal"
+                            className="absolute top-4 right-4 z-20 p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors cursor-pointer bg-white/80 md:bg-transparent shadow-sm md:shadow-none"
+                            aria-label="Close modal window"
                         >
                             <X className="w-5 h-5" />
                         </button>
 
                         {/* Modal Image */}
                         <div className="w-full md:w-5/12 h-64 md:h-auto relative bg-slate-900 overflow-hidden shrink-0">
-                            <img
+                            <Image
                                 src={selectedMember.image}
-                                alt={selectedMember.name}
-                                className="w-full h-full object-cover"
+                                alt={`Portrait of ${selectedMember.name}`}
+                                fill
+                                sizes="(max-width: 768px) 100vw, 40vw"
+                                className="object-cover"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent md:hidden" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent md:hidden pointer-events-none" />
                         </div>
 
                         {/* Modal Content */}
