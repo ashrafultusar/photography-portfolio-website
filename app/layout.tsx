@@ -10,7 +10,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "The Story | Wedding & Event Photography",
+  title: "The Story | Travel & Sports Photography",
   description:
     "The Story – Professional wedding and event photography in Bangladesh. Capturing your eternal moments with cinematic elegance.",
 };
@@ -23,9 +23,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <head>
-        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://res.cloudinary.com"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://images.unsplash.com"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="min-h-full flex flex-col bg-white">
         <AuthProvider>{children}</AuthProvider>
@@ -33,4 +41,3 @@ export default function RootLayout({
     </html>
   );
 }
-
